@@ -14,8 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Shield, Eye, EyeOff, CheckCircle, AlertTriangle, UserPlus, ArrowLeft } from "lucide-react"
 import { registerDemoUser, demoUserExists } from "@/lib/demo-auth"
 import { AnimatedBackground } from "@/components/animated-background"
-import { createSupabaseClient } from "@/lib/supabase"
-import { isDemoMode } from "@/lib/utils"
+import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
 
 // Strong password validation schema
 const registerSchema = z

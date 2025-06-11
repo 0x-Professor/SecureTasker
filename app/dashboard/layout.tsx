@@ -8,8 +8,7 @@ import { NavigationSidebar } from "@/components/navigation-sidebar"
 import DashboardHeader from "@/components/dashboard-header"
 import { getDemoSession } from "@/lib/demo-auth"
 import { AnimatedBackground } from "@/components/animated-background"
-import { createSupabaseClient } from "@/lib/supabase"
-import { isDemoMode } from "@/lib/utils"
+import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState(null)

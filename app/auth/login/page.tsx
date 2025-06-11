@@ -12,10 +12,9 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Shield, Eye, EyeOff, AlertTriangle, Lock, ArrowLeft } from "lucide-react"
-import { isDemoMode } from "@/lib/supabase"
+import { isDemoMode, createSupabaseClient } from "@/lib/supabase"
 import { loginDemoUser } from "@/lib/demo-auth"
 import { AnimatedBackground } from "@/components/animated-background"
-import { createSupabaseClient } from "@/lib/supabase-client"
 
 // Input validation schema
 const loginSchema = z.object({
