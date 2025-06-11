@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, CheckCircle, Clock, AlertCircle, Trash2, Edit } from "lucide-react"
+import { Plus, CheckCircle, Clock, AlertCircle, Trash2, Edit, Search } from "lucide-react"
 import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
 
 // Task validation schema
@@ -31,6 +31,7 @@ interface Task {
   status: "pending" | "in_progress" | "completed"
   created_at: string
   updated_at: string
+  user_id?: string
 }
 
 export default function TaskManager() {
@@ -39,6 +40,9 @@ export default function TaskManager() {
   const [error, setError] = useState("")
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [priorityFilter, setPriorityFilter] = useState<string>("all")
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -74,7 +78,7 @@ export default function TaskManager() {
         const sampleTasks: Task[] = [
           {
             id: "1",
-            title: "Welcome to SecureTasker Demo",
+            title: "Welcome to SecureTasker",
             description: "This is a sample task to demonstrate the secure task management features.",
             priority: "high",
             status: "pending",
@@ -87,6 +91,15 @@ export default function TaskManager() {
             description: "Check out the input validation, XSS protection, and other security measures.",
             priority: "medium",
             status: "in_progress",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          {
+            id: "3",
+            title: "Configure Production Environment",
+            description: "Set up Supabase environment variables for production deployment.",
+            priority: "high",
+            status: "pending",
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           },
@@ -107,7 +120,20 @@ export default function TaskManager() {
   const fetchTasks = async () => {
     try {
       const supabase = createSupabaseClient()
-      const { data, error } = await supabase.from("tasks").select("*").order("created_at", { ascending: false })
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        router.push("/auth/login")
+        return
+      }
+
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
 
       if (error) throw error
       setTasks(data || [])
@@ -192,6 +218,14 @@ export default function TaskManager() {
       }
 
       const supabase = createSupabaseClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        router.push("/auth/login")
+        return
+      }
 
       if (editingTask) {
         const { error } = await supabase
@@ -201,10 +235,16 @@ export default function TaskManager() {
             updated_at: new Date().toISOString(),
           })
           .eq("id", editingTask.id)
+          .eq("user_id", user.id)
 
         if (error) throw error
       } else {
-        const { error } = await supabase.from("tasks").insert([validatedData])
+        const { error } = await supabase.from("tasks").insert([
+          {
+            ...validatedData,
+            user_id: user.id,
+          },
+        ])
 
         if (error) throw error
       }
@@ -249,7 +289,16 @@ export default function TaskManager() {
       }
 
       const supabase = createSupabaseClient()
-      const { error } = await supabase.from("tasks").delete().eq("id", taskId)
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        router.push("/auth/login")
+        return
+      }
+
+      const { error } = await supabase.from("tasks").delete().eq("id", taskId).eq("user_id", user.id)
 
       if (error) throw error
       await fetchTasks()
@@ -285,6 +334,17 @@ export default function TaskManager() {
     }
   }
 
+  // Filter tasks based on search and filters
+  const filteredTasks = tasks.filter((task) => {
+    const matchesSearch =
+      task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    const matchesStatus = statusFilter === "all" || task.status === statusFilter
+    const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter
+
+    return matchesSearch && matchesStatus && matchesPriority
+  })
+
   console.log("TaskManager: Rendering with loading:", loading, "tasks:", tasks.length)
 
   if (loading) {
@@ -303,10 +363,12 @@ export default function TaskManager() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">
-            My Tasks {isDemoMode() && <span className="text-lg text-orange-400">(Demo Mode)</span>}
+            Task Management {isDemoMode() && <span className="text-lg text-orange-400">(Demo Mode)</span>}
           </h2>
           <p className="text-slate-400">
-            {isDemoMode() ? "Manage your demo tasks with full security validation" : "Manage your daily tasks securely"}
+            {isDemoMode()
+              ? "Demo task management with full security validation"
+              : "Secure task management with Supabase"}
           </p>
         </div>
         <Button
@@ -318,6 +380,49 @@ export default function TaskManager() {
           Add Task
         </Button>
       </div>
+
+      {/* Search and Filters */}
+      <Card className="border-slate-700/50 bg-slate-900/50 backdrop-blur-xl">
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                <Input
+                  placeholder="Search tasks..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-slate-800/50 border-slate-600/50 text-white"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-40 bg-slate-800/50 border-slate-600/50 text-white">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger className="w-40 bg-slate-800/50 border-slate-600/50 text-white">
+                  <SelectValue placeholder="Priority" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectItem value="all">All Priority</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {error && (
         <Alert variant="destructive" className="border-red-500/30 bg-red-500/10">
@@ -430,23 +535,33 @@ export default function TaskManager() {
       )}
 
       <div className="grid gap-4">
-        {tasks.length === 0 ? (
+        {filteredTasks.length === 0 ? (
           <Card className="border-slate-700/50 bg-slate-900/50 backdrop-blur-xl">
             <CardContent className="py-12 text-center">
               <AlertCircle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">No tasks yet</h3>
-              <p className="text-slate-400 mb-4">Get started by creating your first task</p>
-              <Button
-                onClick={() => setShowAddForm(true)}
-                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Your First Task
-              </Button>
+              <h3 className="text-lg font-medium text-white mb-2">
+                {searchTerm || statusFilter !== "all" || priorityFilter !== "all"
+                  ? "No matching tasks"
+                  : "No tasks yet"}
+              </h3>
+              <p className="text-slate-400 mb-4">
+                {searchTerm || statusFilter !== "all" || priorityFilter !== "all"
+                  ? "Try adjusting your search or filter criteria"
+                  : "Get started by creating your first task"}
+              </p>
+              {!searchTerm && statusFilter === "all" && priorityFilter === "all" && (
+                <Button
+                  onClick={() => setShowAddForm(true)}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Your First Task
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (
-          tasks.map((task) => (
+          filteredTasks.map((task) => (
             <Card key={task.id} className="border-slate-700/50 bg-slate-900/50 backdrop-blur-xl">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">

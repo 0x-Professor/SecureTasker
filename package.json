@@ -16,6 +16,7 @@
     "@radix-ui/react-progress": "latest",
     "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-slot": "latest",
+    "@radix-ui/react-switch": "latest",
     "@radix-ui/react-tooltip": "latest",
     "@supabase/auth-helpers-nextjs": "latest",
     "@supabase/supabase-js": "^2.38.4",
