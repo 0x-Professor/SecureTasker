@@ -97,7 +97,24 @@ export default function RegisterPage() {
       const validatedData = registerSchema.parse(formData)
 
       if (isDemoMode()) {
-        // Demo mode - simulate registration
+        // Demo mode - store the new user in localStorage
+        const newUser = {
+          id: `user-${Date.now()}`,
+          email: validatedData.email,
+          name: validatedData.fullName,
+          created_at: new Date().toISOString(),
+        }
+
+        // Store the user credentials in localStorage for login
+        localStorage.setItem(
+          `demo_registered_${validatedData.email}`,
+          JSON.stringify({
+            email: validatedData.email,
+            password: validatedData.password,
+            fullName: validatedData.fullName,
+          }),
+        )
+
         setSuccess(true)
         setTimeout(() => {
           router.push("/auth/login")
@@ -180,7 +197,7 @@ export default function RegisterPage() {
                 </CardTitle>
                 <CardDescription className="text-slate-300 text-lg mt-4 leading-relaxed">
                   {isDemoMode()
-                    ? "Demo account created successfully! Redirecting to secure login portal..."
+                    ? "Account created successfully! Redirecting to secure login portal..."
                     : "Verification email sent. Please check your inbox and verify your account. Redirecting to login..."}
                 </CardDescription>
               </CardHeader>

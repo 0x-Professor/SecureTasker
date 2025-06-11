@@ -50,3 +50,16 @@ export const clearDemoUser = () => {
   localStorage.removeItem("demo_user")
   localStorage.removeItem("demo_tasks")
 }
+
+// Check if a user is registered in demo mode
+export const isDemoUserRegistered = (email: string) => {
+  if (typeof window === "undefined") return false
+  return !!localStorage.getItem(`demo_registered_${email}`)
+}
+
+// Get registered demo user
+export const getDemoRegisteredUser = (email: string) => {
+  if (typeof window === "undefined") return null
+  const stored = localStorage.getItem(`demo_registered_${email}`)
+  return stored ? JSON.parse(stored) : null
+}

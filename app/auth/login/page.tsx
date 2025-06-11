@@ -56,7 +56,7 @@ export default function LoginPage() {
       const validatedData = loginSchema.parse({ email, password })
 
       if (isDemoMode()) {
-        // Demo mode - simulate login
+        // Demo mode - check for default demo account first
         if (validatedData.email === "demo@securetasker.com" && validatedData.password === "SecureDemo123!") {
           localStorage.setItem(
             "demo_user",
@@ -68,10 +68,32 @@ export default function LoginPage() {
           )
           router.push("/dashboard")
           return
-        } else {
-          setError("Demo mode: Use demo@securetasker.com / SecureDemo123!")
-          return
         }
+
+        // Check for registered user in demo mode
+        const registeredUserKey = `demo_registered_${validatedData.email}`
+        const registeredUser = localStorage.getItem(registeredUserKey)
+
+        if (registeredUser) {
+          const userData = JSON.parse(registeredUser)
+
+          if (userData.password === validatedData.password) {
+            // Login successful
+            localStorage.setItem(
+              "demo_user",
+              JSON.stringify({
+                email: userData.email,
+                name: userData.fullName,
+                id: `user-${Date.now()}`,
+              }),
+            )
+            router.push("/dashboard")
+            return
+          }
+        }
+
+        setError("Invalid email or password. Please try again.")
+        return
       }
 
       const supabase = createSupabaseClient()
@@ -151,7 +173,8 @@ export default function LoginPage() {
                   <Alert className="mb-6 border-orange-500/30 bg-orange-500/10">
                     <AlertTriangle className="h-4 w-4 text-orange-400" />
                     <AlertDescription className="text-orange-200">
-                      <strong>Demo Mode:</strong> Use demo@securetasker.com / SecureDemo123! to login
+                      <strong>Demo Mode:</strong> Use demo@securetasker.com / SecureDemo123! to login or your registered
+                      account
                     </AlertDescription>
                   </Alert>
                 </motion.div>
