@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { z } from "zod"
@@ -12,8 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Shield, Eye, EyeOff, CheckCircle, AlertTriangle, UserPlus, ArrowLeft } from "lucide-react"
-import { isDemoMode } from "@/lib/supabase"
-import { registerDemoUser, demoUserExists, getDemoSession } from "@/lib/demo-auth"
+import { registerDemoUser, demoUserExists } from "@/lib/demo-auth"
 import { AnimatedBackground } from "@/components/animated-background"
 
 // Strong password validation schema
@@ -53,19 +52,6 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false)
 
   const router = useRouter()
-
-  // Check if already logged in
-  useEffect(() => {
-    const checkSession = () => {
-      const session = getDemoSession()
-      if (session) {
-        console.log("User already logged in, redirecting to dashboard")
-        window.location.href = "/dashboard"
-      }
-    }
-
-    checkSession()
-  }, [router])
 
   const validateInput = (field: string, value: string) => {
     try {
@@ -112,9 +98,6 @@ export default function RegisterPage() {
 
       console.log("=== REGISTRATION ATTEMPT ===")
       console.log("Email:", validatedData.email)
-      console.log("Demo mode check:", isDemoMode())
-      console.log("Environment:", process.env.NODE_ENV)
-      console.log("Hostname:", typeof window !== "undefined" ? window.location.hostname : "server")
 
       // ALWAYS use demo mode for now - no Supabase calls
       console.log("🔒 USING DEMO REGISTRATION SYSTEM")
@@ -132,8 +115,7 @@ export default function RegisterPage() {
         console.log("✅ Demo registration successful")
         setSuccess(true)
         setTimeout(() => {
-          // Use window.location for hard redirect
-          window.location.href = "/auth/login"
+          router.push("/auth/login")
         }, 2000)
       } else {
         console.log("❌ Demo registration failed")

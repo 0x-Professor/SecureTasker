@@ -22,18 +22,16 @@ export default function DashboardHeader({ user }: DashboardHeaderProps) {
     if (isDemoMode()) {
       logoutDemoUser()
       console.log("Demo user logged out")
-      // Use window.location for hard redirect
-      window.location.href = "/"
+      router.push("/")
       return
     }
 
     try {
       console.log("Logging out from Supabase")
-      // This code won't run in demo mode
-      window.location.href = "/"
+      router.push("/")
     } catch (error) {
       console.error("Logout error:", error)
-      window.location.href = "/"
+      router.push("/")
     }
   }
 

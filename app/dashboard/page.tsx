@@ -12,36 +12,45 @@ import { motion } from "framer-motion"
 export default function DashboardPage() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [authChecked, setAuthChecked] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
+    // Prevent multiple auth checks
+    if (authChecked) return
+
     const checkAuth = async () => {
       console.log("=== DASHBOARD AUTH CHECK ===")
       console.log("Demo mode:", isDemoMode())
-      console.log("Environment:", process.env.NODE_ENV)
-      console.log("Hostname:", typeof window !== "undefined" ? window.location.hostname : "server")
 
-      // ALWAYS use demo mode for now
-      console.log("🔒 CHECKING DEMO SESSION")
+      try {
+        // ALWAYS use demo mode for now
+        console.log("🔒 CHECKING DEMO SESSION")
 
-      // Check for demo session
-      const demoSession = getDemoSession()
-      console.log("Demo session:", demoSession)
+        // Check for demo session
+        const demoSession = getDemoSession()
+        console.log("Demo session:", demoSession)
 
-      if (!demoSession) {
-        console.log("❌ No demo session found, redirecting to login")
-        // Use window.location for hard redirect
-        window.location.href = "/auth/login"
-        return
+        if (!demoSession) {
+          console.log("❌ No demo session found, redirecting to login")
+          setAuthChecked(true)
+          router.push("/auth/login")
+          return
+        }
+
+        console.log("✅ Demo session found, user authenticated")
+        setUser(demoSession)
+        setLoading(false)
+        setAuthChecked(true)
+      } catch (error) {
+        console.error("Auth check error:", error)
+        setAuthChecked(true)
+        router.push("/auth/login")
       }
-
-      console.log("✅ Demo session found, user authenticated")
-      setUser(demoSession)
-      setLoading(false)
     }
 
     checkAuth()
-  }, [router])
+  }, [router, authChecked])
 
   if (loading) {
     return (
