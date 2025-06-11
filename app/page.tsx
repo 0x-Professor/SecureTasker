@@ -103,7 +103,7 @@ export default function HomePage() {
                 <Shield className="h-20 w-20 text-cyan-400" />
               </div>
             </div>
-            <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-6 tracking-wider">
+            <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-6 tracking-wider font-orbitron">
               SECURETASKER
             </h1>
           </div>

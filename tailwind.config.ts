@@ -68,7 +68,7 @@ const config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        orbitron: ["Orbitron", "monospace"],
+        orbitron: ["var(--font-orbitron)", "monospace"],
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
