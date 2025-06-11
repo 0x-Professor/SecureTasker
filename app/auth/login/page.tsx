@@ -56,39 +56,53 @@ export default function LoginPage() {
       // Validate all inputs
       const validatedData = loginSchema.parse({ email, password })
 
-      if (isDemoMode()) {
-        console.log("Attempting demo login for:", validatedData.email)
+      console.log("Login attempt for:", validatedData.email)
+      console.log("Demo mode check:", isDemoMode())
 
-        // Use the new demo authentication system
+      // Always check demo mode first
+      if (isDemoMode()) {
+        console.log("Using demo authentication system")
+
+        // Use the demo authentication system
         const session = loginDemoUser(validatedData.email, validatedData.password)
 
         if (session) {
-          console.log("Login successful, redirecting to dashboard")
+          console.log("Demo login successful, redirecting to dashboard")
           router.push("/dashboard")
           return
         } else {
-          console.log("Login failed - invalid credentials")
+          console.log("Demo login failed - invalid credentials")
           setError("Invalid email or password. Please check your credentials and try again.")
           return
         }
       }
 
-      const supabase = createSupabaseClient()
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: validatedData.email,
-        password: validatedData.password,
-      })
+      // Only try Supabase if not in demo mode
+      console.log("Attempting Supabase authentication")
+      try {
+        const supabase = createSupabaseClient()
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: validatedData.email,
+          password: validatedData.password,
+        })
 
-      if (error) {
-        setError("Invalid email or password. Please try again.")
-        return
-      }
+        if (error) {
+          console.error("Supabase auth error:", error)
+          setError("Invalid email or password. Please try again.")
+          return
+        }
 
-      if (data.user) {
-        router.push("/dashboard")
-        router.refresh()
+        if (data.user) {
+          console.log("Supabase login successful")
+          router.push("/dashboard")
+          router.refresh()
+        }
+      } catch (supabaseError) {
+        console.error("Supabase client error:", supabaseError)
+        setError("Authentication service unavailable. Please try again later.")
       }
     } catch (error) {
+      console.error("Login error:", error)
       if (error instanceof z.ZodError) {
         const errors: Record<string, string> = {}
         error.errors.forEach((err) => {

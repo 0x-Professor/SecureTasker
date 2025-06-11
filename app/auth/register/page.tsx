@@ -97,7 +97,13 @@ export default function RegisterPage() {
       // Validate all inputs
       const validatedData = registerSchema.parse(formData)
 
+      console.log("Registration attempt for:", validatedData.email)
+      console.log("Demo mode check:", isDemoMode())
+
+      // Always check demo mode first
       if (isDemoMode()) {
+        console.log("Using demo registration system")
+
         // Check if user already exists
         if (demoUserExists(validatedData.email)) {
           setError("An account with this email already exists. Please try logging in instead.")
@@ -108,39 +114,51 @@ export default function RegisterPage() {
         const success = registerDemoUser(validatedData.email, validatedData.password, validatedData.fullName)
 
         if (success) {
+          console.log("Demo registration successful")
           setSuccess(true)
           setTimeout(() => {
             router.push("/auth/login")
           }, 2000)
         } else {
+          console.log("Demo registration failed")
           setError("Failed to create account. Please try again.")
         }
         return
       }
 
-      const supabase = createSupabaseClient()
-      const { data, error } = await supabase.auth.signUp({
-        email: validatedData.email,
-        password: validatedData.password,
-        options: {
-          data: {
-            full_name: validatedData.fullName,
+      // Only try Supabase if not in demo mode
+      console.log("Attempting Supabase registration")
+      try {
+        const supabase = createSupabaseClient()
+        const { data, error } = await supabase.auth.signUp({
+          email: validatedData.email,
+          password: validatedData.password,
+          options: {
+            data: {
+              full_name: validatedData.fullName,
+            },
           },
-        },
-      })
+        })
 
-      if (error) {
-        setError(error.message)
-        return
-      }
+        if (error) {
+          console.error("Supabase registration error:", error)
+          setError(error.message)
+          return
+        }
 
-      if (data.user) {
-        setSuccess(true)
-        setTimeout(() => {
-          router.push("/auth/login")
-        }, 3000)
+        if (data.user) {
+          console.log("Supabase registration successful")
+          setSuccess(true)
+          setTimeout(() => {
+            router.push("/auth/login")
+          }, 3000)
+        }
+      } catch (supabaseError) {
+        console.error("Supabase client error:", supabaseError)
+        setError("Registration service unavailable. Please try again later.")
       }
     } catch (error) {
+      console.error("Registration error:", error)
       if (error instanceof z.ZodError) {
         const errors: Record<string, string> = {}
         error.errors.forEach((err) => {

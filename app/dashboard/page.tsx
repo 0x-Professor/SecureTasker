@@ -16,10 +16,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      console.log("Checking authentication...")
+      console.log("Demo mode:", isDemoMode())
+
       if (isDemoMode()) {
         // Check for demo session
         const demoSession = getDemoSession()
+        console.log("Demo session:", demoSession)
+
         if (!demoSession) {
+          console.log("No demo session found, redirecting to login")
           router.push("/auth/login")
           return
         }
@@ -28,20 +34,24 @@ export default function DashboardPage() {
         return
       }
 
+      // Only check Supabase if not in demo mode
       try {
+        console.log("Checking Supabase session...")
         const supabase = createSupabaseClient()
         const {
           data: { session },
         } = await supabase.auth.getSession()
 
         if (!session) {
+          console.log("No Supabase session found, redirecting to login")
           router.push("/auth/login")
           return
         }
 
+        console.log("Supabase session found")
         setUser(session.user)
       } catch (error) {
-        console.error("Auth error:", error)
+        console.error("Auth check error:", error)
         router.push("/auth/login")
       } finally {
         setLoading(false)
