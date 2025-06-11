@@ -32,3 +32,21 @@ export const createSupabaseServerClient = () => {
 export const isDemoMode = () => {
   return !isSupabaseConfigured()
 }
+
+// Enhanced demo user management
+export const getDemoUser = () => {
+  if (typeof window === "undefined") return null
+  const stored = localStorage.getItem("demo_user")
+  return stored ? JSON.parse(stored) : null
+}
+
+export const setDemoUser = (user: any) => {
+  if (typeof window === "undefined") return
+  localStorage.setItem("demo_user", JSON.stringify(user))
+}
+
+export const clearDemoUser = () => {
+  if (typeof window === "undefined") return
+  localStorage.removeItem("demo_user")
+  localStorage.removeItem("demo_tasks")
+}

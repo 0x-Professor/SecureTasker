@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import TaskManager from "@/components/task-manager"
 import DashboardHeader from "@/components/dashboard-header"
 import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
+import { AnimatedBackground } from "@/components/animated-background"
+import { motion } from "framer-motion"
 
 export default function DashboardPage() {
   const [user, setUser] = useState(null)
@@ -50,21 +52,35 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading dashboard...</p>
+      <div className="min-h-screen bg-slate-950 relative overflow-hidden">
+        <AnimatedBackground />
+        <div className="relative z-10 min-h-screen flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            className="text-center"
+          >
+            <div className="relative mb-8">
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full blur-xl opacity-50 animate-pulse"></div>
+              <div className="relative w-16 h-16 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto"></div>
+            </div>
+            <p className="text-cyan-300 text-xl font-orbitron tracking-wider">INITIALIZING SECURE DASHBOARD...</p>
+          </motion.div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardHeader user={user} />
-      <main className="container mx-auto px-4 py-8">
-        <TaskManager />
-      </main>
+    <div className="min-h-screen bg-slate-950 relative overflow-hidden">
+      <AnimatedBackground />
+      <div className="relative z-10">
+        <DashboardHeader user={user} />
+        <main className="container mx-auto px-4 py-8">
+          <TaskManager />
+        </main>
+      </div>
     </div>
   )
 }
