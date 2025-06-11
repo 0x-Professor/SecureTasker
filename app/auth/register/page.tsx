@@ -5,12 +5,15 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { z } from "zod"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Shield, Eye, EyeOff, CheckCircle, AlertTriangle } from "lucide-react"
+import { Shield, Eye, EyeOff, CheckCircle, AlertTriangle, UserPlus, ArrowLeft } from "lucide-react"
+import { registerDemoUser, demoUserExists } from "@/lib/demo-auth"
+import { AnimatedBackground } from "@/components/animated-background"
 import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
 
 // Strong password validation schema
@@ -94,38 +97,63 @@ export default function RegisterPage() {
       // Validate all inputs
       const validatedData = registerSchema.parse(formData)
 
+      console.log("=== REGISTRATION ATTEMPT ===")
+      console.log("Email:", validatedData.email)
+      console.log("Demo mode check:", isDemoMode())
+
       if (isDemoMode()) {
-        // Demo mode - simulate registration
-        setSuccess(true)
-        setTimeout(() => {
-          router.push("/auth/login")
-        }, 3000)
-        return
-      }
+        console.log("🔒 USING DEMO REGISTRATION SYSTEM")
 
-      const supabase = createSupabaseClient()
-      const { data, error } = await supabase.auth.signUp({
-        email: validatedData.email,
-        password: validatedData.password,
-        options: {
-          data: {
-            full_name: validatedData.fullName,
+        // Check if user already exists
+        if (demoUserExists(validatedData.email)) {
+          setError("An account with this email already exists. Please try logging in instead.")
+          return
+        }
+
+        // Register the demo user
+        const success = registerDemoUser(validatedData.email, validatedData.password, validatedData.fullName)
+
+        if (success) {
+          console.log("✅ Demo registration successful")
+          setSuccess(true)
+          setTimeout(() => {
+            router.push("/auth/login")
+          }, 2000)
+        } else {
+          console.log("❌ Demo registration failed")
+          setError("Failed to create account. Please try again.")
+        }
+      } else {
+        console.log("🔒 USING SUPABASE REGISTRATION SYSTEM")
+
+        // Use Supabase authentication
+        const supabase = createSupabaseClient()
+        const { data, error } = await supabase.auth.signUp({
+          email: validatedData.email,
+          password: validatedData.password,
+          options: {
+            data: {
+              full_name: validatedData.fullName,
+            },
           },
-        },
-      })
+        })
 
-      if (error) {
-        setError(error.message)
-        return
-      }
+        if (error) {
+          console.log("❌ Supabase registration failed:", error.message)
+          setError(error.message)
+          return
+        }
 
-      if (data.user) {
-        setSuccess(true)
-        setTimeout(() => {
-          router.push("/auth/login")
-        }, 3000)
+        if (data.user) {
+          console.log("✅ Supabase registration successful")
+          setSuccess(true)
+          setTimeout(() => {
+            router.push("/auth/login")
+          }, 2000)
+        }
       }
     } catch (error) {
+      console.error("Registration error:", error)
       if (error instanceof z.ZodError) {
         const errors: Record<string, string> = {}
         error.errors.forEach((err) => {
@@ -144,192 +172,326 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-green-100 rounded-full">
-                <CheckCircle className="h-8 w-8 text-green-600" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl text-green-600">Registration Successful!</CardTitle>
-            <CardDescription>
-              {isDemoMode()
-                ? "Demo account created! You'll be redirected to login shortly."
-                : "Please check your email to verify your account. You'll be redirected to login shortly."}
-            </CardDescription>
-          </CardHeader>
-        </Card>
+      <div className="min-h-screen bg-slate-950 text-white relative overflow-hidden">
+        <AnimatedBackground />
+
+        <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            className="w-full max-w-md"
+          >
+            <Card className="border-0 bg-gradient-to-br from-slate-900/80 to-slate-800/80 backdrop-blur-xl rounded-3xl overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 via-emerald-500/20 to-cyan-500/20 rounded-3xl blur-xl"></div>
+              <div className="absolute inset-0 border border-green-500/30 rounded-3xl"></div>
+
+              <CardHeader className="text-center relative z-10 pt-12 pb-8">
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ duration: 1, delay: 0.3 }}
+                  className="flex justify-center mb-6"
+                >
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full blur-lg opacity-50 animate-pulse"></div>
+                    <div className="relative p-4 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full border border-green-500/30">
+                      <CheckCircle className="h-16 w-16 text-green-400 drop-shadow-[0_0_20px_rgba(34,197,94,0.7)]" />
+                    </div>
+                  </div>
+                </motion.div>
+
+                <CardTitle className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent font-orbitron tracking-wider">
+                  ACCOUNT CREATED
+                </CardTitle>
+                <CardDescription className="text-slate-300 text-lg mt-4 leading-relaxed">
+                  Your account has been successfully created! You can now login with your credentials.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </motion.div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 bg-green-100 rounded-full">
-              <Shield className="h-8 w-8 text-green-600" />
-            </div>
-          </div>
-          <CardTitle className="text-2xl">Create Account</CardTitle>
-          <CardDescription>Join SecureTasker with enterprise-grade security</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isDemoMode() && (
-            <Alert className="mb-4">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Demo Mode:</strong> Registration will create a demo account for testing purposes
-              </AlertDescription>
-            </Alert>
-          )}
+    <div className="min-h-screen bg-slate-950 text-white relative overflow-hidden">
+      <AnimatedBackground />
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Rest of the form remains the same */}
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                type="text"
-                value={formData.fullName}
-                onChange={(e) => handleInputChange("fullName", e.target.value)}
-                placeholder="Enter your full name"
-                required
-                autoComplete="name"
-                className={validationErrors.fullName ? "border-red-500" : ""}
-              />
-              {validationErrors.fullName && <p className="text-sm text-red-600">{validationErrors.fullName}</p>}
-            </div>
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 50, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="w-full max-w-md"
+        >
+          <Card className="border-0 bg-gradient-to-br from-slate-900/80 to-slate-800/80 backdrop-blur-xl rounded-3xl overflow-hidden relative">
+            {/* Animated border */}
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-cyan-500/20 rounded-3xl blur-xl"></div>
+            <div className="absolute inset-0 border border-purple-500/30 rounded-3xl"></div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                placeholder="Enter your email"
-                required
-                autoComplete="email"
-                className={validationErrors.email ? "border-red-500" : ""}
-              />
-              {validationErrors.email && <p className="text-sm text-red-600">{validationErrors.email}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
-                  placeholder="Create a strong password"
-                  required
-                  autoComplete="new-password"
-                  className={validationErrors.password ? "border-red-500 pr-10" : "pr-10"}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
-                  )}
-                </Button>
-              </div>
-              {formData.password && (
-                <div className="space-y-1">
-                  <div className="flex space-x-1">
-                    {[1, 2, 3, 4, 5].map((level) => (
-                      <div
-                        key={level}
-                        className={`h-1 w-full rounded ${
-                          passwordStrength >= level
-                            ? passwordStrength <= 2
-                              ? "bg-red-500"
-                              : passwordStrength <= 4
-                                ? "bg-yellow-500"
-                                : "bg-green-500"
-                            : "bg-gray-200"
-                        }`}
-                      />
-                    ))}
+            <CardHeader className="text-center relative z-10 pt-8 pb-6">
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0, rotateY: 180 }}
+                animate={{ scale: 1, opacity: 1, rotateY: 0 }}
+                transition={{ duration: 1, delay: 0.3 }}
+                className="flex justify-center mb-6"
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-lg opacity-50 animate-pulse"></div>
+                  <div className="relative p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full border border-purple-500/30">
+                    <Shield className="h-12 w-12 text-purple-400 drop-shadow-[0_0_15px_rgba(168,85,247,0.7)]" />
                   </div>
-                  <p className="text-xs text-gray-600">
-                    Password strength: {passwordStrength <= 2 ? "Weak" : passwordStrength <= 4 ? "Medium" : "Strong"}
-                  </p>
                 </div>
-              )}
-              {validationErrors.password && <p className="text-sm text-red-600">{validationErrors.password}</p>}
-            </div>
+              </motion.div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                  placeholder="Confirm your password"
-                  required
-                  autoComplete="new-password"
-                  className={validationErrors.confirmPassword ? "border-red-500 pr-10" : "pr-10"}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent font-orbitron tracking-wider">
+                CREATE ACCOUNT
+              </CardTitle>
+              <CardDescription className="text-slate-300 text-lg mt-2">
+                Join the quantum-secured platform with enterprise-grade protection
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="relative z-10 px-8 pb-8">
+              {isDemoMode() && (
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
+                  <Alert className="mb-6 border-orange-500/30 bg-orange-500/10">
+                    <AlertTriangle className="h-4 w-4 text-orange-400" />
+                    <AlertDescription className="text-orange-200">
+                      <strong>Demo Mode:</strong> Your account will be stored locally for testing
+                    </AlertDescription>
+                  </Alert>
+                </motion.div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="space-y-2"
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
+                  <Label htmlFor="fullName" className="text-purple-300 font-semibold tracking-wide">
+                    FULL NAME
+                  </Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) => handleInputChange("fullName", e.target.value)}
+                    placeholder="Enter your full name"
+                    required
+                    autoComplete="name"
+                    className={`bg-slate-800/50 border-slate-600/50 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl h-12 ${
+                      validationErrors.fullName ? "border-red-500" : ""
+                    }`}
+                  />
+                  {validationErrors.fullName && (
+                    <p className="text-sm text-red-400 flex items-center gap-2">
+                      <AlertTriangle className="h-3 w-3" />
+                      {validationErrors.fullName}
+                    </p>
                   )}
-                </Button>
-              </div>
-              {validationErrors.confirmPassword && (
-                <p className="text-sm text-red-600">{validationErrors.confirmPassword}</p>
-              )}
-            </div>
+                </motion.div>
 
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                  className="space-y-2"
+                >
+                  <Label htmlFor="email" className="text-purple-300 font-semibold tracking-wide">
+                    EMAIL ADDRESS
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                    autoComplete="email"
+                    className={`bg-slate-800/50 border-slate-600/50 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl h-12 ${
+                      validationErrors.email ? "border-red-500" : ""
+                    }`}
+                  />
+                  {validationErrors.email && (
+                    <p className="text-sm text-red-400 flex items-center gap-2">
+                      <AlertTriangle className="h-3 w-3" />
+                      {validationErrors.email}
+                    </p>
+                  )}
+                </motion.div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating Account..." : "Create Account"}
-            </Button>
-          </form>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 }}
+                  className="space-y-2"
+                >
+                  <Label htmlFor="password" className="text-purple-300 font-semibold tracking-wide">
+                    PASSWORD
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={(e) => handleInputChange("password", e.target.value)}
+                      placeholder="Create a strong password"
+                      required
+                      autoComplete="new-password"
+                      className={`bg-slate-800/50 border-slate-600/50 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl h-12 pr-12 ${
+                        validationErrors.password ? "border-red-500" : ""
+                      }`}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-700/50 text-slate-400 hover:text-purple-400"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{" "}
-              <Link href="/auth/login" className="text-blue-600 hover:underline">
-                Sign in here
-              </Link>
-            </p>
-          </div>
+                  {formData.password && (
+                    <div className="space-y-2">
+                      <div className="flex space-x-1">
+                        {[1, 2, 3, 4, 5].map((level) => (
+                          <div
+                            key={level}
+                            className={`h-1.5 w-full rounded-full transition-all duration-300 ${
+                              passwordStrength >= level
+                                ? passwordStrength <= 2
+                                  ? "bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.5)]"
+                                  : passwordStrength <= 4
+                                    ? "bg-yellow-500 shadow-[0_0_5px_rgba(234,179,8,0.5)]"
+                                    : "bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"
+                                : "bg-slate-700"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-xs text-slate-400">
+                        Security Level: {passwordStrength <= 2 ? "Weak" : passwordStrength <= 4 ? "Medium" : "Strong"}
+                      </p>
+                    </div>
+                  )}
 
-          <div className="mt-4 text-center">
-            <Link href="/" className="text-sm text-gray-500 hover:underline">
-              ← Back to Home
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+                  {validationErrors.password && (
+                    <p className="text-sm text-red-400 flex items-center gap-2">
+                      <AlertTriangle className="h-3 w-3" />
+                      {validationErrors.password}
+                    </p>
+                  )}
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 }}
+                  className="space-y-2"
+                >
+                  <Label htmlFor="confirmPassword" className="text-purple-300 font-semibold tracking-wide">
+                    CONFIRM PASSWORD
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={formData.confirmPassword}
+                      onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                      placeholder="Confirm your password"
+                      required
+                      autoComplete="new-password"
+                      className={`bg-slate-800/50 border-slate-600/50 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl h-12 pr-12 ${
+                        validationErrors.confirmPassword ? "border-red-500" : ""
+                      }`}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-700/50 text-slate-400 hover:text-purple-400"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  {validationErrors.confirmPassword && (
+                    <p className="text-sm text-red-400 flex items-center gap-2">
+                      <AlertTriangle className="h-3 w-3" />
+                      {validationErrors.confirmPassword}
+                    </p>
+                  )}
+                </motion.div>
+
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Alert variant="destructive" className="border-red-500/30 bg-red-500/10">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription className="text-red-200">{error}</AlertDescription>
+                    </Alert>
+                  </motion.div>
+                )}
+
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 }}>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white font-semibold tracking-wider rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        CREATING ACCOUNT...
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <UserPlus className="h-4 w-4" />
+                        CREATE ACCOUNT
+                      </div>
+                    )}
+                  </Button>
+                </motion.div>
+              </form>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.1 }}
+                className="mt-8 text-center space-y-4"
+              >
+                <p className="text-slate-400">
+                  Already have an account?{" "}
+                  <Link
+                    href="/auth/login"
+                    className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                </p>
+
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-300 transition-colors text-sm"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Return to Base
+                </Link>
+              </motion.div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   )
 }
