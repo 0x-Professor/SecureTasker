@@ -104,7 +104,7 @@ export default function HomePage() {
               </div>
             </div>
             <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-6 tracking-wider font-orbitron">
-              SECURETASKER
+              CYBERVAULT
             </h1>
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-8 tracking-wider font-orbitron"
           >
-            SECURETASKER
+            CYBERVAULT
           </motion.h1>
 
           <motion.div
@@ -167,7 +167,7 @@ export default function HomePage() {
             className="mb-4"
           >
             <span className="text-sm uppercase tracking-[0.3em] text-cyan-400 font-semibold">
-              QUANTUM-SECURED TASK MANAGEMENT
+              QUANTUM-SECURED ENTERPRISE PLATFORM
             </span>
           </motion.div>
 
@@ -177,8 +177,8 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 1 }}
             className="text-xl md:text-2xl text-slate-300 mb-12 max-w-4xl mx-auto leading-relaxed"
           >
-            Next-generation task management platform with military-grade security protocols, AI-powered threat
-            detection, and quantum-resistant encryption infrastructure.
+            Next-generation enterprise security platform with military-grade protection protocols, AI-powered threat
+            detection, and quantum-resistant encryption infrastructure for mission-critical operations.
           </motion.p>
 
           <motion.div
@@ -189,11 +189,11 @@ export default function HomePage() {
           >
             <GlowingButton href="/auth/login" variant="primary">
               <Lock className="mr-3 h-5 w-5" />
-              SECURE LOGIN
+              SECURE ACCESS
               <ArrowRight className="ml-3 h-5 w-5" />
             </GlowingButton>
             <GlowingButton href="/auth/register" variant="secondary">
-              INITIALIZE ACCOUNT
+              INITIALIZE VAULT
             </GlowingButton>
           </motion.div>
         </motion.div>
@@ -301,11 +301,11 @@ export default function HomePage() {
             <div className="absolute inset-0 border border-gradient-to-r from-cyan-500/30 to-purple-500/30 rounded-3xl"></div>
             <CardContent className="p-12 md:p-20 relative z-10">
               <h2 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-8 font-orbitron tracking-wider">
-                INITIALIZE SECURITY
+                INITIALIZE VAULT
               </h2>
               <p className="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-                Join the next generation of secure task management. Experience quantum-level protection for your digital
-                workspace.
+                Join the next generation of secure enterprise management. Experience quantum-level protection for your
+                mission-critical operations.
               </p>
               <div className="flex flex-col sm:flex-row gap-6 justify-center">
                 <GlowingButton href="/auth/register" variant="primary" size="large">
@@ -327,7 +327,7 @@ export default function HomePage() {
           viewport={{ once: true }}
           className="text-center mt-20 pt-12 border-t border-slate-800"
         >
-          <p className="text-slate-400 mb-2">SECURETASKER © 2024 - QUANTUM-SECURED ENTERPRISE PLATFORM</p>
+          <p className="text-slate-400 mb-2">CYBERVAULT © 2024 - QUANTUM-SECURED ENTERPRISE PLATFORM</p>
           <p className="text-slate-500 text-sm">
             POWERED BY NEXT.JS QUANTUM CORE • SUPABASE NEURAL NETWORK • AI SECURITY MATRIX
           </p>

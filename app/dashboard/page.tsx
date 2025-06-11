@@ -3,21 +3,8 @@
 import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import {
-  CheckSquare,
-  Shield,
-  TrendingUp,
-  Activity,
-  Clock,
-  Users,
-  Database,
-  Zap,
-  Eye,
-  AlertTriangle,
-} from "lucide-react"
+import { CheckSquare, Shield, TrendingUp, Activity, Clock, Users, Eye, AlertTriangle } from "lucide-react"
 import { SecurityBadge } from "@/components/security-badge"
-import Link from "next/link"
 
 export default function DashboardOverview() {
   const stats = [
@@ -32,49 +19,6 @@ export default function DashboardOverview() {
     { action: "Threat scan", item: "Input validation check", time: "15 minutes ago", type: "info" },
     { action: "New operation", item: "Update firewall rules", time: "1 hour ago", type: "default" },
     { action: "Access granted", item: "New session from Chrome", time: "2 hours ago", type: "warning" },
-  ]
-
-  const quickActions = [
-    {
-      href: "/dashboard/tasks",
-      icon: CheckSquare,
-      label: "Manage Operations",
-      description: "View and manage active operations",
-      gradient: "from-blue-500/20 to-cyan-500/20",
-      border: "border-blue-500/30",
-      text: "text-blue-300",
-      hover: "hover:bg-blue-500/30",
-    },
-    {
-      href: "/dashboard/security",
-      icon: Shield,
-      label: "Security Hub",
-      description: "Monitor threats and vulnerabilities",
-      gradient: "from-green-500/20 to-emerald-500/20",
-      border: "border-green-500/30",
-      text: "text-green-300",
-      hover: "hover:bg-green-500/30",
-    },
-    {
-      href: "/dashboard/analytics",
-      icon: TrendingUp,
-      label: "Intelligence Center",
-      description: "View performance analytics",
-      gradient: "from-purple-500/20 to-pink-500/20",
-      border: "border-purple-500/30",
-      text: "text-purple-300",
-      hover: "hover:bg-purple-500/30",
-    },
-    {
-      href: "/dashboard/reports",
-      icon: Database,
-      label: "Generate Reports",
-      description: "Create detailed reports",
-      gradient: "from-orange-500/20 to-red-500/20",
-      border: "border-orange-500/30",
-      text: "text-orange-300",
-      hover: "hover:bg-orange-500/30",
-    },
   ]
 
   return (
@@ -152,90 +96,49 @@ export default function DashboardOverview() {
         })}
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Actions */}
-        <Card className="border-slate-700/50 bg-slate-900/50 backdrop-blur-xl">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Zap className="h-5 w-5 text-yellow-400" />
-              Quick Actions
-            </CardTitle>
-            <CardDescription className="text-slate-400">Frequently used operations</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-1 gap-3">
-              {quickActions.map((action, index) => {
-                const Icon = action.icon
-                return (
-                  <motion.div
-                    key={action.href}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Link href={action.href} className="block">
-                      <Button
-                        className={`w-full justify-start bg-gradient-to-r ${action.gradient} border ${action.border} ${action.text} ${action.hover} transition-all duration-200`}
-                      >
-                        <Icon className="mr-3 h-4 w-4" />
-                        <div className="text-left">
-                          <div className="font-medium">{action.label}</div>
-                          <div className="text-xs opacity-70">{action.description}</div>
-                        </div>
-                      </Button>
-                    </Link>
-                  </motion.div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card className="lg:col-span-2 border-slate-700/50 bg-slate-900/50 backdrop-blur-xl">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Activity className="h-5 w-5 text-cyan-400" />
-              Recent Activity
-            </CardTitle>
-            <CardDescription className="text-slate-400">Latest system events and user actions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center gap-4 p-3 rounded-lg bg-slate-800/30 border border-slate-700/30 hover:bg-slate-700/30 transition-colors"
-                >
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      activity.type === "success"
-                        ? "bg-green-400"
-                        : activity.type === "warning"
-                          ? "bg-yellow-400"
-                          : activity.type === "info"
-                            ? "bg-blue-400"
-                            : "bg-slate-400"
-                    }`}
-                  />
-                  <div className="flex-1">
-                    <p className="text-white font-medium">{activity.action}</p>
-                    <p className="text-slate-400 text-sm">{activity.item}</p>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-500 text-sm">
-                    <Clock className="h-3 w-3" />
-                    {activity.time}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Recent Activity - Now Full Width */}
+      <Card className="border-slate-700/50 bg-slate-900/50 backdrop-blur-xl">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <Activity className="h-5 w-5 text-cyan-400" />
+            Recent Activity
+          </CardTitle>
+          <CardDescription className="text-slate-400">Latest system events and user actions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {recentActivity.map((activity, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="flex items-center gap-4 p-3 rounded-lg bg-slate-800/30 border border-slate-700/30 hover:bg-slate-700/30 transition-colors"
+              >
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    activity.type === "success"
+                      ? "bg-green-400"
+                      : activity.type === "warning"
+                        ? "bg-yellow-400"
+                        : activity.type === "info"
+                          ? "bg-blue-400"
+                          : "bg-slate-400"
+                  }`}
+                />
+                <div className="flex-1">
+                  <p className="text-white font-medium">{activity.action}</p>
+                  <p className="text-slate-400 text-sm">{activity.item}</p>
+                </div>
+                <div className="flex items-center gap-2 text-slate-500 text-sm">
+                  <Clock className="h-3 w-3" />
+                  {activity.time}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* System Status */}
       <Card className="border-slate-700/50 bg-slate-900/50 backdrop-blur-xl">
@@ -278,7 +181,7 @@ export default function DashboardOverview() {
         </CardContent>
       </Card>
 
-      {/* Setup Instructions - Integrated into the dashboard */}
+      {/* System Configuration */}
       <Card className="border-slate-700/50 bg-slate-900/50 backdrop-blur-xl">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
