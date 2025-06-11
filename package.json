@@ -23,11 +23,6 @@
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
-    "@emotion/react": "latest",
-    "@emotion/styled": "latest",
-    "@mui/icons-material": "latest",
-    "@mui/material": "latest",
-    "@mui/material-pigment-css": "latest",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-dropdown-menu": "^2.0.6",
     "@radix-ui/react-label": "^2.0.2",
@@ -46,7 +41,6 @@
     "next-themes": "latest",
     "react": "^18",
     "react-dom": "^18",
-    "react-router-dom": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "zod": "latest"
