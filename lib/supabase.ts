@@ -1,5 +1,4 @@
-import { createClientComponentClient, createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
 // Environment variable validation
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -18,13 +17,15 @@ export const createSupabaseClient = () => {
   return createClientComponentClient()
 }
 
+// For server components, we'll handle auth on the client side in demo mode
 export const createSupabaseServerClient = () => {
   if (!isSupabaseConfigured()) {
     throw new Error(
       "Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.",
     )
   }
-  return createServerComponentClient({ cookies })
+  // Return client component client for now - auth will be handled client-side
+  return createClientComponentClient()
 }
 
 // Demo mode fallback
