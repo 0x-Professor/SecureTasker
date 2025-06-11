@@ -97,28 +97,36 @@ export default function RegisterPage() {
       const validatedData = registerSchema.parse(formData)
 
       if (isDemoMode()) {
-        // Demo mode - store the new user in localStorage
-        const newUser = {
-          id: `user-${Date.now()}`,
+        // Demo mode - store the user credentials properly
+        console.log("Storing demo user:", validatedData.email) // Debug log
+
+        // Store user data in multiple formats for reliability
+        const userData = {
           email: validatedData.email,
-          name: validatedData.fullName,
+          password: validatedData.password,
+          fullName: validatedData.fullName,
+          id: `user-${Date.now()}`,
           created_at: new Date().toISOString(),
         }
 
-        // Store the user credentials in localStorage for login
-        localStorage.setItem(
-          `demo_registered_${validatedData.email}`,
-          JSON.stringify({
-            email: validatedData.email,
-            password: validatedData.password,
-            fullName: validatedData.fullName,
-          }),
-        )
+        // Store with email as key (primary method)
+        localStorage.setItem(`demo_user_${validatedData.email}`, JSON.stringify(userData))
 
+        // Also store in a users list for backup
+        const existingUsers = JSON.parse(localStorage.getItem("demo_users") || "[]")
+        const userExists = existingUsers.find((user: any) => user.email === validatedData.email)
+
+        if (!userExists) {
+          existingUsers.push(userData)
+          localStorage.setItem("demo_users", JSON.stringify(existingUsers))
+        }
+
+        console.log("User stored successfully") // Debug log
         setSuccess(true)
+
         setTimeout(() => {
           router.push("/auth/login")
-        }, 3000)
+        }, 2000)
         return
       }
 
@@ -196,9 +204,7 @@ export default function RegisterPage() {
                   ACCOUNT INITIALIZED
                 </CardTitle>
                 <CardDescription className="text-slate-300 text-lg mt-4 leading-relaxed">
-                  {isDemoMode()
-                    ? "Account created successfully! Redirecting to secure login portal..."
-                    : "Verification email sent. Please check your inbox and verify your account. Redirecting to login..."}
+                  Account created successfully! You can now login with your credentials. Redirecting to login...
                 </CardDescription>
               </CardHeader>
             </Card>

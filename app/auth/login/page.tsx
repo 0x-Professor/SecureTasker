@@ -18,7 +18,7 @@ import { AnimatedBackground } from "@/components/animated-background"
 // Input validation schema
 const loginSchema = z.object({
   email: z.string().email("Invalid email address").min(1, "Email is required"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(1, "Password is required"),
 })
 
 export default function LoginPage() {
@@ -56,7 +56,9 @@ export default function LoginPage() {
       const validatedData = loginSchema.parse({ email, password })
 
       if (isDemoMode()) {
-        // Demo mode - check for default demo account first
+        console.log("Attempting demo login for:", validatedData.email) // Debug log
+
+        // Check for default demo account first
         if (validatedData.email === "demo@securetasker.com" && validatedData.password === "SecureDemo123!") {
           localStorage.setItem(
             "demo_user",
@@ -70,29 +72,52 @@ export default function LoginPage() {
           return
         }
 
-        // Check for registered user in demo mode
-        const registeredUserKey = `demo_registered_${validatedData.email}`
-        const registeredUser = localStorage.getItem(registeredUserKey)
+        // Check for registered user using the new storage format
+        const userKey = `demo_user_${validatedData.email}`
+        const storedUser = localStorage.getItem(userKey)
 
-        if (registeredUser) {
-          const userData = JSON.parse(registeredUser)
+        console.log("Looking for user with key:", userKey) // Debug log
+        console.log("Found stored user:", storedUser) // Debug log
+
+        if (storedUser) {
+          const userData = JSON.parse(storedUser)
+          console.log("Comparing passwords:", validatedData.password, "vs", userData.password) // Debug log
 
           if (userData.password === validatedData.password) {
-            // Login successful
+            // Login successful - set current user
             localStorage.setItem(
               "demo_user",
               JSON.stringify({
                 email: userData.email,
                 name: userData.fullName,
-                id: `user-${Date.now()}`,
+                id: userData.id,
               }),
             )
+            console.log("Login successful, redirecting to dashboard") // Debug log
             router.push("/dashboard")
             return
           }
         }
 
-        setError("Invalid email or password. Please try again.")
+        // Also check the backup users list
+        const allUsers = JSON.parse(localStorage.getItem("demo_users") || "[]")
+        const foundUser = allUsers.find((user: any) => user.email === validatedData.email)
+
+        if (foundUser && foundUser.password === validatedData.password) {
+          localStorage.setItem(
+            "demo_user",
+            JSON.stringify({
+              email: foundUser.email,
+              name: foundUser.fullName,
+              id: foundUser.id,
+            }),
+          )
+          router.push("/dashboard")
+          return
+        }
+
+        console.log("No matching user found or password incorrect") // Debug log
+        setError("Invalid email or password. Please check your credentials and try again.")
         return
       }
 
@@ -173,8 +198,7 @@ export default function LoginPage() {
                   <Alert className="mb-6 border-orange-500/30 bg-orange-500/10">
                     <AlertTriangle className="h-4 w-4 text-orange-400" />
                     <AlertDescription className="text-orange-200">
-                      <strong>Demo Mode:</strong> Use demo@securetasker.com / SecureDemo123! to login or your registered
-                      account
+                      <strong>Demo Mode:</strong> Use demo@securetasker.com / SecureDemo123! or your registered account
                     </AlertDescription>
                   </Alert>
                 </motion.div>
@@ -198,7 +222,7 @@ export default function LoginPage() {
                       setEmail(e.target.value)
                       validateInput("email", e.target.value)
                     }}
-                    placeholder={isDemoMode() ? "demo@securetasker.com" : "Enter your email"}
+                    placeholder="Enter your email"
                     required
                     autoComplete="email"
                     className={`bg-slate-800/50 border-slate-600/50 text-white placeholder-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 rounded-xl h-12 ${
@@ -231,7 +255,7 @@ export default function LoginPage() {
                         setPassword(e.target.value)
                         validateInput("password", e.target.value)
                       }}
-                      placeholder={isDemoMode() ? "SecureDemo123!" : "Enter your password"}
+                      placeholder="Enter your password"
                       required
                       autoComplete="current-password"
                       className={`bg-slate-800/50 border-slate-600/50 text-white placeholder-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 rounded-xl h-12 pr-12 ${
