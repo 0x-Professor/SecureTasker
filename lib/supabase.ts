@@ -8,15 +8,20 @@ export const isSupabaseConfigured = () => {
   return !!(supabaseUrl && supabaseAnonKey && supabaseUrl !== "your-project-url" && supabaseAnonKey !== "your-anon-key")
 }
 
-// Production mode - only use demo mode if Supabase is not configured
+// Production mode - only use demo mode if explicitly in development without Supabase config
 export const isDemoMode = () => {
-  // Check if we're in a development environment without proper Supabase config
+  // Force production mode if we're in a production environment
+  if (process.env.NODE_ENV === "production") {
+    return false
+  }
+
+  // In development, check if Supabase is configured
   if (!isSupabaseConfigured()) {
     console.log("⚠️ Supabase not configured - using demo mode")
     return true
   }
 
-  // In production, always use Supabase
+  // If Supabase is configured, use production mode
   return false
 }
 

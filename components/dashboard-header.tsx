@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Shield, LogOut, User, Settings } from "lucide-react"
 import { isDemoMode } from "@/lib/supabase"
 import { logoutDemoUser } from "@/lib/demo-auth"
+import { createSupabaseClient } from "@/lib/supabase"
 
 interface DashboardHeaderProps {
   user: any
@@ -28,6 +29,13 @@ export default function DashboardHeader({ user }: DashboardHeaderProps) {
 
     try {
       console.log("Logging out from Supabase")
+      const supabase = createSupabaseClient()
+      const { error } = await supabase.auth.signOut()
+
+      if (error) {
+        console.error("Logout error:", error)
+      }
+
       router.push("/")
     } catch (error) {
       console.error("Logout error:", error)

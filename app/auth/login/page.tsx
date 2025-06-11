@@ -15,6 +15,7 @@ import { Shield, Eye, EyeOff, AlertTriangle, Lock, ArrowLeft } from "lucide-reac
 import { isDemoMode } from "@/lib/supabase"
 import { loginDemoUser } from "@/lib/demo-auth"
 import { AnimatedBackground } from "@/components/animated-background"
+import { createSupabaseClient } from "@/lib/supabase-client"
 
 // Input validation schema
 const loginSchema = z.object({
@@ -60,26 +61,44 @@ export default function LoginPage() {
       console.log("Email:", validatedData.email)
       console.log("Demo mode check:", isDemoMode())
 
-      // ALWAYS use demo mode for now - no Supabase calls
-      console.log("🔒 USING DEMO AUTHENTICATION SYSTEM")
+      if (isDemoMode()) {
+        console.log("🔒 USING DEMO AUTHENTICATION SYSTEM")
 
-      // Use the demo authentication system
-      const session = loginDemoUser(validatedData.email, validatedData.password)
+        // Use the demo authentication system
+        const session = loginDemoUser(validatedData.email, validatedData.password)
 
-      if (session) {
-        console.log("✅ Demo login successful, redirecting to dashboard")
-
-        // Add a small delay to ensure session is properly stored
-        setTimeout(() => {
-          console.log("Executing redirect to dashboard")
-          window.location.href = "/dashboard"
-        }, 500)
-
-        return
+        if (session) {
+          console.log("✅ Demo login successful, redirecting to dashboard")
+          setTimeout(() => {
+            window.location.href = "/dashboard"
+          }, 500)
+          return
+        } else {
+          console.log("❌ Demo login failed - invalid credentials")
+          setError("Invalid email or password. Please check your credentials and try again.")
+          return
+        }
       } else {
-        console.log("❌ Demo login failed - invalid credentials")
-        setError("Invalid email or password. Please check your credentials and try again.")
-        return
+        console.log("🔒 USING SUPABASE AUTHENTICATION SYSTEM")
+
+        // Use Supabase authentication
+        const supabase = createSupabaseClient()
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: validatedData.email,
+          password: validatedData.password,
+        })
+
+        if (error) {
+          console.log("❌ Supabase login failed:", error.message)
+          setError("Invalid email or password. Please check your credentials and try again.")
+          return
+        }
+
+        if (data.user) {
+          console.log("✅ Supabase login successful, redirecting to dashboard")
+          router.push("/dashboard")
+          return
+        }
       }
     } catch (error) {
       console.error("Login error:", error)
@@ -139,14 +158,16 @@ export default function LoginPage() {
             </CardHeader>
 
             <CardContent className="relative z-10 px-8 pb-8">
-              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
-                <Alert className="mb-6 border-orange-500/30 bg-orange-500/10">
-                  <AlertTriangle className="h-4 w-4 text-orange-400" />
-                  <AlertDescription className="text-orange-200">
-                    <strong>Demo Mode:</strong> Use demo@securetasker.com / SecureDemo123! or register a new account
-                  </AlertDescription>
-                </Alert>
-              </motion.div>
+              {isDemoMode() && (
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
+                  <Alert className="mb-6 border-orange-500/30 bg-orange-500/10">
+                    <AlertTriangle className="h-4 w-4 text-orange-400" />
+                    <AlertDescription className="text-orange-200">
+                      <strong>Demo Mode:</strong> Use demo@securetasker.com / SecureDemo123! or register a new account
+                    </AlertDescription>
+                  </Alert>
+                </motion.div>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <motion.div
