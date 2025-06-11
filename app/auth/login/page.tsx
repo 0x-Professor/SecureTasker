@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Shield, Eye, EyeOff, AlertTriangle, Lock, ArrowLeft } from "lucide-react"
 import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
+import { loginDemoUser } from "@/lib/demo-auth"
 import { AnimatedBackground } from "@/components/animated-background"
 
 // Input validation schema
@@ -56,69 +57,20 @@ export default function LoginPage() {
       const validatedData = loginSchema.parse({ email, password })
 
       if (isDemoMode()) {
-        console.log("Attempting demo login for:", validatedData.email) // Debug log
+        console.log("Attempting demo login for:", validatedData.email)
 
-        // Check for default demo account first
-        if (validatedData.email === "demo@securetasker.com" && validatedData.password === "SecureDemo123!") {
-          localStorage.setItem(
-            "demo_user",
-            JSON.stringify({
-              email: validatedData.email,
-              name: "Demo User",
-              id: "demo-user-id",
-            }),
-          )
+        // Use the new demo authentication system
+        const session = loginDemoUser(validatedData.email, validatedData.password)
+
+        if (session) {
+          console.log("Login successful, redirecting to dashboard")
           router.push("/dashboard")
           return
-        }
-
-        // Check for registered user using the new storage format
-        const userKey = `demo_user_${validatedData.email}`
-        const storedUser = localStorage.getItem(userKey)
-
-        console.log("Looking for user with key:", userKey) // Debug log
-        console.log("Found stored user:", storedUser) // Debug log
-
-        if (storedUser) {
-          const userData = JSON.parse(storedUser)
-          console.log("Comparing passwords:", validatedData.password, "vs", userData.password) // Debug log
-
-          if (userData.password === validatedData.password) {
-            // Login successful - set current user
-            localStorage.setItem(
-              "demo_user",
-              JSON.stringify({
-                email: userData.email,
-                name: userData.fullName,
-                id: userData.id,
-              }),
-            )
-            console.log("Login successful, redirecting to dashboard") // Debug log
-            router.push("/dashboard")
-            return
-          }
-        }
-
-        // Also check the backup users list
-        const allUsers = JSON.parse(localStorage.getItem("demo_users") || "[]")
-        const foundUser = allUsers.find((user: any) => user.email === validatedData.email)
-
-        if (foundUser && foundUser.password === validatedData.password) {
-          localStorage.setItem(
-            "demo_user",
-            JSON.stringify({
-              email: foundUser.email,
-              name: foundUser.fullName,
-              id: foundUser.id,
-            }),
-          )
-          router.push("/dashboard")
+        } else {
+          console.log("Login failed - invalid credentials")
+          setError("Invalid email or password. Please check your credentials and try again.")
           return
         }
-
-        console.log("No matching user found or password incorrect") // Debug log
-        setError("Invalid email or password. Please check your credentials and try again.")
-        return
       }
 
       const supabase = createSupabaseClient()
@@ -326,7 +278,7 @@ export default function LoginPage() {
                     href="/auth/register"
                     className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors"
                   >
-                    Initialize Account
+                    Create Account
                   </Link>
                 </p>
 

@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -8,32 +7,18 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Shield, LogOut, User, Settings } from "lucide-react"
 import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
-import type { User as SupabaseUser } from "@supabase/auth-helpers-nextjs"
+import { logoutDemoUser } from "@/lib/demo-auth"
 
 interface DashboardHeaderProps {
-  user: SupabaseUser | null
+  user: any
 }
 
 export default function DashboardHeader({ user }: DashboardHeaderProps) {
   const router = useRouter()
-  const [demoUser, setDemoUser] = useState<any>(null)
-
-  useEffect(() => {
-    if (isDemoMode()) {
-      // Check for demo user in localStorage
-      const storedDemoUser = localStorage.getItem("demo_user")
-      if (storedDemoUser) {
-        setDemoUser(JSON.parse(storedDemoUser))
-      } else {
-        // Redirect to login if no demo user
-        router.push("/auth/login")
-      }
-    }
-  }, [router])
 
   const handleLogout = async () => {
     if (isDemoMode()) {
-      localStorage.removeItem("demo_user")
+      logoutDemoUser()
       router.push("/")
       return
     }
@@ -49,28 +34,21 @@ export default function DashboardHeader({ user }: DashboardHeaderProps) {
     }
   }
 
-  const currentUser = isDemoMode() ? demoUser : user
-
-  if (!currentUser) {
+  if (!user) {
     return null
   }
 
-  const userInitials = isDemoMode()
-    ? demoUser?.name
-        ?.split(" ")
-        .map((name: string) => name[0])
-        .join("")
-        .toUpperCase() || "DU"
-    : user?.user_metadata?.full_name
-        ?.split(" ")
-        .map((name: string) => name[0])
-        .join("")
-        .toUpperCase() ||
-      user?.email?.[0]?.toUpperCase() ||
-      "U"
+  const userInitials =
+    user.name
+      ?.split(" ")
+      .map((name: string) => name[0])
+      .join("")
+      .toUpperCase() ||
+    user.email?.[0]?.toUpperCase() ||
+    "U"
 
-  const userName = isDemoMode() ? demoUser?.name || "Demo User" : user?.user_metadata?.full_name || "User"
-  const userEmail = isDemoMode() ? demoUser?.email || "demo@securetasker.com" : user?.email || ""
+  const userName = user.name || "User"
+  const userEmail = user.email || ""
 
   return (
     <motion.header

@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Shield, Eye, EyeOff, CheckCircle, AlertTriangle, UserPlus, ArrowLeft } from "lucide-react"
 import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
+import { registerDemoUser, demoUserExists } from "@/lib/demo-auth"
 import { AnimatedBackground } from "@/components/animated-background"
 
 // Strong password validation schema
@@ -97,36 +98,23 @@ export default function RegisterPage() {
       const validatedData = registerSchema.parse(formData)
 
       if (isDemoMode()) {
-        // Demo mode - store the user credentials properly
-        console.log("Storing demo user:", validatedData.email) // Debug log
-
-        // Store user data in multiple formats for reliability
-        const userData = {
-          email: validatedData.email,
-          password: validatedData.password,
-          fullName: validatedData.fullName,
-          id: `user-${Date.now()}`,
-          created_at: new Date().toISOString(),
+        // Check if user already exists
+        if (demoUserExists(validatedData.email)) {
+          setError("An account with this email already exists. Please try logging in instead.")
+          return
         }
 
-        // Store with email as key (primary method)
-        localStorage.setItem(`demo_user_${validatedData.email}`, JSON.stringify(userData))
+        // Register the demo user
+        const success = registerDemoUser(validatedData.email, validatedData.password, validatedData.fullName)
 
-        // Also store in a users list for backup
-        const existingUsers = JSON.parse(localStorage.getItem("demo_users") || "[]")
-        const userExists = existingUsers.find((user: any) => user.email === validatedData.email)
-
-        if (!userExists) {
-          existingUsers.push(userData)
-          localStorage.setItem("demo_users", JSON.stringify(existingUsers))
+        if (success) {
+          setSuccess(true)
+          setTimeout(() => {
+            router.push("/auth/login")
+          }, 2000)
+        } else {
+          setError("Failed to create account. Please try again.")
         }
-
-        console.log("User stored successfully") // Debug log
-        setSuccess(true)
-
-        setTimeout(() => {
-          router.push("/auth/login")
-        }, 2000)
         return
       }
 
@@ -201,10 +189,10 @@ export default function RegisterPage() {
                 </motion.div>
 
                 <CardTitle className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent font-orbitron tracking-wider">
-                  ACCOUNT INITIALIZED
+                  ACCOUNT CREATED
                 </CardTitle>
                 <CardDescription className="text-slate-300 text-lg mt-4 leading-relaxed">
-                  Account created successfully! You can now login with your credentials. Redirecting to login...
+                  Your account has been successfully created! You can now login with your credentials.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -246,7 +234,7 @@ export default function RegisterPage() {
               </motion.div>
 
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent font-orbitron tracking-wider">
-                INITIALIZE ACCOUNT
+                CREATE ACCOUNT
               </CardTitle>
               <CardDescription className="text-slate-300 text-lg mt-2">
                 Join the quantum-secured platform with enterprise-grade protection
@@ -259,7 +247,7 @@ export default function RegisterPage() {
                   <Alert className="mb-6 border-orange-500/30 bg-orange-500/10">
                     <AlertTriangle className="h-4 w-4 text-orange-400" />
                     <AlertDescription className="text-orange-200">
-                      <strong>Demo Mode:</strong> Registration will create a demo account for testing purposes
+                      <strong>Demo Mode:</strong> Your account will be stored locally for testing
                     </AlertDescription>
                   </Alert>
                 </motion.div>
@@ -451,7 +439,7 @@ export default function RegisterPage() {
                     {loading ? (
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        INITIALIZING...
+                        CREATING ACCOUNT...
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
@@ -475,7 +463,7 @@ export default function RegisterPage() {
                     href="/auth/login"
                     className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
                   >
-                    Access Terminal
+                    Sign In
                   </Link>
                 </p>
 

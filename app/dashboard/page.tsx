@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import TaskManager from "@/components/task-manager"
 import DashboardHeader from "@/components/dashboard-header"
 import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
+import { getDemoSession } from "@/lib/demo-auth"
 import { AnimatedBackground } from "@/components/animated-background"
 import { motion } from "framer-motion"
 
@@ -16,13 +17,13 @@ export default function DashboardPage() {
   useEffect(() => {
     const checkAuth = async () => {
       if (isDemoMode()) {
-        // Check for demo user
-        const demoUser = localStorage.getItem("demo_user")
-        if (!demoUser) {
+        // Check for demo session
+        const demoSession = getDemoSession()
+        if (!demoSession) {
           router.push("/auth/login")
           return
         }
-        setUser(JSON.parse(demoUser))
+        setUser(demoSession)
         setLoading(false)
         return
       }
