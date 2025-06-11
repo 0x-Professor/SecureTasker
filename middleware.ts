@@ -4,22 +4,6 @@ import type { NextRequest } from "next/server"
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
 
-  // Check if Supabase is configured
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (supabaseUrl && supabaseAnonKey) {
-    try {
-      const { createMiddlewareClient } = await import("@supabase/auth-helpers-nextjs")
-      // Create a Supabase client configured to use cookies
-      const supabase = createMiddlewareClient({ req, res })
-      // Refresh session if expired - required for Server Components
-      await supabase.auth.getSession()
-    } catch (error) {
-      console.warn("Supabase middleware error:", error)
-    }
-  }
-
   // Security Headers - OWASP Recommended
   const securityHeaders = {
     // Prevent XSS attacks

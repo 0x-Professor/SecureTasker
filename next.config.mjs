@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    serverComponentsExternalPackages: ['@supabase/auth-helpers-nextjs'],
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -7,6 +10,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
+    domains: [],
     unoptimized: true,
   },
 }
