@@ -63,8 +63,18 @@ export function loginDemoUser(email: string, password: string): DemoSession | nu
         email: normalizedEmail,
         name: "Demo User",
       }
+
+      // Clear any existing session first
+      localStorage.removeItem(DEMO_SESSION_KEY)
+
+      // Set new session
       localStorage.setItem(DEMO_SESSION_KEY, JSON.stringify(session))
-      console.log("Default demo user logged in")
+      console.log("Default demo user logged in, session stored:", session)
+
+      // Verify session was stored
+      const storedSession = localStorage.getItem(DEMO_SESSION_KEY)
+      console.log("Verification - stored session:", storedSession)
+
       return session
     }
 
@@ -97,9 +107,17 @@ export function loginDemoUser(email: string, password: string): DemoSession | nu
       name: user.fullName,
     }
 
+    // Clear any existing session first
+    localStorage.removeItem(DEMO_SESSION_KEY)
+
     // Save session
     localStorage.setItem(DEMO_SESSION_KEY, JSON.stringify(session))
     console.log("Demo user logged in successfully:", session)
+
+    // Verify session was stored
+    const storedSession = localStorage.getItem(DEMO_SESSION_KEY)
+    console.log("Verification - stored session:", storedSession)
+
     return session
   } catch (error) {
     console.error("Failed to login demo user:", error)
@@ -111,9 +129,16 @@ export function loginDemoUser(email: string, password: string): DemoSession | nu
 export function getDemoSession(): DemoSession | null {
   try {
     const sessionData = localStorage.getItem(DEMO_SESSION_KEY)
-    if (!sessionData) return null
+    console.log("Getting demo session, raw data:", sessionData)
 
-    return JSON.parse(sessionData)
+    if (!sessionData) {
+      console.log("No session data found")
+      return null
+    }
+
+    const session = JSON.parse(sessionData)
+    console.log("Parsed session:", session)
+    return session
   } catch (error) {
     console.error("Failed to get demo session:", error)
     return null

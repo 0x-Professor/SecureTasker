@@ -68,8 +68,13 @@ export default function LoginPage() {
 
       if (session) {
         console.log("✅ Demo login successful, redirecting to dashboard")
-        // Use router.push instead of window.location to avoid infinite loops
-        router.push("/dashboard")
+
+        // Add a small delay to ensure session is properly stored
+        setTimeout(() => {
+          console.log("Executing redirect to dashboard")
+          window.location.href = "/dashboard"
+        }, 500)
+
         return
       } else {
         console.log("❌ Demo login failed - invalid credentials")

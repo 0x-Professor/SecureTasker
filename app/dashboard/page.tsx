@@ -12,47 +12,42 @@ import { motion } from "framer-motion"
 export default function DashboardPage() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [authChecked, setAuthChecked] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    // Prevent multiple auth checks
-    if (authChecked) return
-
-    const checkAuth = async () => {
+    const checkAuth = () => {
       console.log("=== DASHBOARD AUTH CHECK ===")
       console.log("Demo mode:", isDemoMode())
 
-      try {
-        // ALWAYS use demo mode for now
-        console.log("🔒 CHECKING DEMO SESSION")
+      // ALWAYS use demo mode for now
+      console.log("🔒 CHECKING DEMO SESSION")
 
-        // Check for demo session
-        const demoSession = getDemoSession()
-        console.log("Demo session:", demoSession)
+      // Check for demo session
+      const demoSession = getDemoSession()
+      console.log("Demo session:", demoSession)
 
-        if (!demoSession) {
-          console.log("❌ No demo session found, redirecting to login")
-          setAuthChecked(true)
-          router.push("/auth/login")
-          return
-        }
-
-        console.log("✅ Demo session found, user authenticated")
-        setUser(demoSession)
-        setLoading(false)
-        setAuthChecked(true)
-      } catch (error) {
-        console.error("Auth check error:", error)
-        setAuthChecked(true)
+      if (!demoSession) {
+        console.log("❌ No demo session found, redirecting to login")
         router.push("/auth/login")
+        return
       }
+
+      console.log("✅ Demo session found, user authenticated")
+      console.log("Setting user state:", demoSession)
+      setUser(demoSession)
+      setLoading(false)
+      console.log("Dashboard should now render")
     }
 
-    checkAuth()
-  }, [router, authChecked])
+    // Small delay to ensure proper state management
+    const timer = setTimeout(checkAuth, 100)
+    return () => clearTimeout(timer)
+  }, [router])
+
+  console.log("Dashboard render - Loading:", loading, "User:", user)
 
   if (loading) {
+    console.log("Rendering loading state")
     return (
       <div className="min-h-screen bg-slate-950 relative overflow-hidden">
         <AnimatedBackground />
@@ -74,13 +69,22 @@ export default function DashboardPage() {
     )
   }
 
+  if (!user) {
+    console.log("No user found, redirecting to login")
+    router.push("/auth/login")
+    return null
+  }
+
+  console.log("Rendering dashboard with user:", user)
   return (
     <div className="min-h-screen bg-slate-950 relative overflow-hidden">
       <AnimatedBackground />
       <div className="relative z-10">
         <DashboardHeader user={user} />
         <main className="container mx-auto px-4 py-8">
-          <TaskManager />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            <TaskManager />
+          </motion.div>
         </main>
       </div>
     </div>
