@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Shield, LogOut, User, Settings } from "lucide-react"
-import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
+import { isDemoMode } from "@/lib/supabase"
 import { logoutDemoUser } from "@/lib/demo-auth"
 
 interface DashboardHeaderProps {
@@ -17,20 +17,23 @@ export default function DashboardHeader({ user }: DashboardHeaderProps) {
   const router = useRouter()
 
   const handleLogout = async () => {
+    console.log("Logging out...")
+
     if (isDemoMode()) {
       logoutDemoUser()
-      router.push("/")
+      console.log("Demo user logged out")
+      // Use window.location for hard redirect
+      window.location.href = "/"
       return
     }
 
     try {
-      const supabase = createSupabaseClient()
-      await supabase.auth.signOut()
-      router.push("/")
-      router.refresh()
+      console.log("Logging out from Supabase")
+      // This code won't run in demo mode
+      window.location.href = "/"
     } catch (error) {
       console.error("Logout error:", error)
-      router.push("/")
+      window.location.href = "/"
     }
   }
 

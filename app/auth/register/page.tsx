@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { z } from "zod"
@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Shield, Eye, EyeOff, CheckCircle, AlertTriangle, UserPlus, ArrowLeft } from "lucide-react"
 import { isDemoMode } from "@/lib/supabase"
-import { registerDemoUser, demoUserExists } from "@/lib/demo-auth"
+import { registerDemoUser, demoUserExists, getDemoSession } from "@/lib/demo-auth"
 import { AnimatedBackground } from "@/components/animated-background"
 
 // Strong password validation schema
@@ -53,6 +53,19 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false)
 
   const router = useRouter()
+
+  // Check if already logged in
+  useEffect(() => {
+    const checkSession = () => {
+      const session = getDemoSession()
+      if (session) {
+        console.log("User already logged in, redirecting to dashboard")
+        window.location.href = "/dashboard"
+      }
+    }
+
+    checkSession()
+  }, [router])
 
   const validateInput = (field: string, value: string) => {
     try {
@@ -119,7 +132,8 @@ export default function RegisterPage() {
         console.log("✅ Demo registration successful")
         setSuccess(true)
         setTimeout(() => {
-          router.push("/auth/login")
+          // Use window.location for hard redirect
+          window.location.href = "/auth/login"
         }, 2000)
       } else {
         console.log("❌ Demo registration failed")

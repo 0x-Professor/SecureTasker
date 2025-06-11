@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { z } from "zod"
@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Shield, Eye, EyeOff, AlertTriangle, Lock, ArrowLeft } from "lucide-react"
 import { isDemoMode } from "@/lib/supabase"
-import { loginDemoUser } from "@/lib/demo-auth"
+import { loginDemoUser, getDemoSession } from "@/lib/demo-auth"
 import { AnimatedBackground } from "@/components/animated-background"
 
 // Input validation schema
@@ -31,6 +31,19 @@ export default function LoginPage() {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   const router = useRouter()
+
+  // Check if already logged in
+  useEffect(() => {
+    const checkSession = () => {
+      const session = getDemoSession()
+      if (session) {
+        console.log("User already logged in, redirecting to dashboard")
+        router.push("/dashboard")
+      }
+    }
+
+    checkSession()
+  }, [router])
 
   const validateInput = (field: string, value: string) => {
     try {
@@ -70,7 +83,9 @@ export default function LoginPage() {
 
       if (session) {
         console.log("✅ Demo login successful, redirecting to dashboard")
-        router.push("/dashboard")
+
+        // Force navigation with hard redirect
+        window.location.href = "/dashboard"
         return
       } else {
         console.log("❌ Demo login failed - invalid credentials")

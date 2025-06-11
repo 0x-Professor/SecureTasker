@@ -30,7 +30,8 @@ export default function DashboardPage() {
 
       if (!demoSession) {
         console.log("❌ No demo session found, redirecting to login")
-        router.push("/auth/login")
+        // Use window.location for hard redirect
+        window.location.href = "/auth/login"
         return
       }
 
