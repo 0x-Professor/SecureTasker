@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import {
   Home,
@@ -19,8 +19,8 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { createClient } from "@/lib/supabase"
-import { useRouter } from "next/navigation"
+import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
+import { logoutDemoUser } from "@/lib/demo-auth"
 
 const navigationItems = [
   { href: "/dashboard", icon: Home, label: "Command Center", description: "Mission overview" },
@@ -41,11 +41,31 @@ export function NavigationSidebar({ user }: NavigationSidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push("/")
+    console.log("Signing out...")
+
+    if (isDemoMode()) {
+      logoutDemoUser()
+      console.log("Demo user logged out")
+      router.push("/")
+      return
+    }
+
+    try {
+      console.log("Logging out from Supabase")
+      const supabase = createSupabaseClient()
+      const { error } = await supabase.auth.signOut()
+
+      if (error) {
+        console.error("Logout error:", error)
+      }
+
+      router.push("/")
+    } catch (error) {
+      console.error("Logout error:", error)
+      router.push("/")
+    }
   }
 
   return (

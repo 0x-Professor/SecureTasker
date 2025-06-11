@@ -6,9 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Shield, LogOut, User, Settings } from "lucide-react"
-import { isDemoMode } from "@/lib/supabase"
+import { isDemoMode, createSupabaseClient } from "@/lib/supabase"
 import { logoutDemoUser } from "@/lib/demo-auth"
-import { createSupabaseClient } from "@/lib/supabase"
 
 interface DashboardHeaderProps {
   user: any
@@ -82,9 +81,9 @@ export default function DashboardHeader({ user }: DashboardHeaderProps) {
             </div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent font-orbitron tracking-wider">
-                SECURETASKER {isDemoMode() && <span className="text-lg text-orange-400">[DEMO]</span>}
+                CYBERVAULT {isDemoMode() && <span className="text-lg text-orange-400">[DEMO]</span>}
               </h1>
-              <p className="text-slate-400 text-sm tracking-wide">QUANTUM-SECURED TASK MANAGEMENT</p>
+              <p className="text-slate-400 text-sm tracking-wide">QUANTUM-SECURED PLATFORM</p>
             </div>
           </motion.div>
 
