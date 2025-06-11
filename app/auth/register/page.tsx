@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Shield, Eye, EyeOff, CheckCircle, AlertTriangle, UserPlus, ArrowLeft } from "lucide-react"
-import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
+import { isDemoMode } from "@/lib/supabase"
 import { registerDemoUser, demoUserExists } from "@/lib/demo-auth"
 import { AnimatedBackground } from "@/components/animated-background"
 
@@ -97,65 +97,33 @@ export default function RegisterPage() {
       // Validate all inputs
       const validatedData = registerSchema.parse(formData)
 
-      console.log("Registration attempt for:", validatedData.email)
+      console.log("=== REGISTRATION ATTEMPT ===")
+      console.log("Email:", validatedData.email)
       console.log("Demo mode check:", isDemoMode())
+      console.log("Environment:", process.env.NODE_ENV)
+      console.log("Hostname:", typeof window !== "undefined" ? window.location.hostname : "server")
 
-      // Always check demo mode first
-      if (isDemoMode()) {
-        console.log("Using demo registration system")
+      // ALWAYS use demo mode for now - no Supabase calls
+      console.log("🔒 USING DEMO REGISTRATION SYSTEM")
 
-        // Check if user already exists
-        if (demoUserExists(validatedData.email)) {
-          setError("An account with this email already exists. Please try logging in instead.")
-          return
-        }
-
-        // Register the demo user
-        const success = registerDemoUser(validatedData.email, validatedData.password, validatedData.fullName)
-
-        if (success) {
-          console.log("Demo registration successful")
-          setSuccess(true)
-          setTimeout(() => {
-            router.push("/auth/login")
-          }, 2000)
-        } else {
-          console.log("Demo registration failed")
-          setError("Failed to create account. Please try again.")
-        }
+      // Check if user already exists
+      if (demoUserExists(validatedData.email)) {
+        setError("An account with this email already exists. Please try logging in instead.")
         return
       }
 
-      // Only try Supabase if not in demo mode
-      console.log("Attempting Supabase registration")
-      try {
-        const supabase = createSupabaseClient()
-        const { data, error } = await supabase.auth.signUp({
-          email: validatedData.email,
-          password: validatedData.password,
-          options: {
-            data: {
-              full_name: validatedData.fullName,
-            },
-          },
-        })
+      // Register the demo user
+      const success = registerDemoUser(validatedData.email, validatedData.password, validatedData.fullName)
 
-        if (error) {
-          console.error("Supabase registration error:", error)
-          setError(error.message)
-          return
-        }
-
-        if (data.user) {
-          console.log("Supabase registration successful")
-          setSuccess(true)
-          setTimeout(() => {
-            router.push("/auth/login")
-          }, 3000)
-        }
-      } catch (supabaseError) {
-        console.error("Supabase client error:", supabaseError)
-        setError("Registration service unavailable. Please try again later.")
+      if (success) {
+        console.log("✅ Demo registration successful")
+        setSuccess(true)
+        setTimeout(() => {
+          router.push("/auth/login")
+        }, 2000)
+      } else {
+        console.log("❌ Demo registration failed")
+        setError("Failed to create account. Please try again.")
       }
     } catch (error) {
       console.error("Registration error:", error)
@@ -260,16 +228,14 @@ export default function RegisterPage() {
             </CardHeader>
 
             <CardContent className="relative z-10 px-8 pb-8">
-              {isDemoMode() && (
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
-                  <Alert className="mb-6 border-orange-500/30 bg-orange-500/10">
-                    <AlertTriangle className="h-4 w-4 text-orange-400" />
-                    <AlertDescription className="text-orange-200">
-                      <strong>Demo Mode:</strong> Your account will be stored locally for testing
-                    </AlertDescription>
-                  </Alert>
-                </motion.div>
-              )}
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
+                <Alert className="mb-6 border-orange-500/30 bg-orange-500/10">
+                  <AlertTriangle className="h-4 w-4 text-orange-400" />
+                  <AlertDescription className="text-orange-200">
+                    <strong>Demo Mode:</strong> Your account will be stored locally for testing
+                  </AlertDescription>
+                </Alert>
+              </motion.div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <motion.div

@@ -8,8 +8,18 @@ export const isSupabaseConfigured = () => {
   return !!(supabaseUrl && supabaseAnonKey)
 }
 
-// Check if we're in demo mode - more robust detection
+// Force demo mode - more aggressive detection
 export const isDemoMode = () => {
+  // Always use demo mode in v0.dev environment
+  if (typeof window !== "undefined" && window.location.hostname.includes("v0.dev")) {
+    return true
+  }
+
+  // Always use demo mode in development
+  if (process.env.NODE_ENV === "development") {
+    return true
+  }
+
   // If no Supabase config, definitely demo mode
   if (!supabaseUrl || !supabaseAnonKey) {
     return true
@@ -25,7 +35,8 @@ export const isDemoMode = () => {
     return true
   }
 
-  return false
+  // Force demo mode for now - can be changed later
+  return true
 }
 
 export const createSupabaseClient = () => {
@@ -53,11 +64,6 @@ export const createSupabaseServerClient = () => {
   // Return client component client for now - auth will be handled client-side
   return createClientComponentClient()
 }
-
-// Demo mode fallback
-// export const isDemoMode = () => {
-//   return !isSupabaseConfigured()
-// }
 
 // Enhanced demo user management
 export const getDemoUser = () => {

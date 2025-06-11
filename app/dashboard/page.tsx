@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import TaskManager from "@/components/task-manager"
 import DashboardHeader from "@/components/dashboard-header"
-import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
+import { isDemoMode } from "@/lib/supabase"
 import { getDemoSession } from "@/lib/demo-auth"
 import { AnimatedBackground } from "@/components/animated-background"
 import { motion } from "framer-motion"
@@ -16,46 +16,27 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      console.log("Checking authentication...")
+      console.log("=== DASHBOARD AUTH CHECK ===")
       console.log("Demo mode:", isDemoMode())
+      console.log("Environment:", process.env.NODE_ENV)
+      console.log("Hostname:", typeof window !== "undefined" ? window.location.hostname : "server")
 
-      if (isDemoMode()) {
-        // Check for demo session
-        const demoSession = getDemoSession()
-        console.log("Demo session:", demoSession)
+      // ALWAYS use demo mode for now
+      console.log("🔒 CHECKING DEMO SESSION")
 
-        if (!demoSession) {
-          console.log("No demo session found, redirecting to login")
-          router.push("/auth/login")
-          return
-        }
-        setUser(demoSession)
-        setLoading(false)
+      // Check for demo session
+      const demoSession = getDemoSession()
+      console.log("Demo session:", demoSession)
+
+      if (!demoSession) {
+        console.log("❌ No demo session found, redirecting to login")
+        router.push("/auth/login")
         return
       }
 
-      // Only check Supabase if not in demo mode
-      try {
-        console.log("Checking Supabase session...")
-        const supabase = createSupabaseClient()
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-
-        if (!session) {
-          console.log("No Supabase session found, redirecting to login")
-          router.push("/auth/login")
-          return
-        }
-
-        console.log("Supabase session found")
-        setUser(session.user)
-      } catch (error) {
-        console.error("Auth check error:", error)
-        router.push("/auth/login")
-      } finally {
-        setLoading(false)
-      }
+      console.log("✅ Demo session found, user authenticated")
+      setUser(demoSession)
+      setLoading(false)
     }
 
     checkAuth()

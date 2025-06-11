@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Shield, Eye, EyeOff, AlertTriangle, Lock, ArrowLeft } from "lucide-react"
-import { createSupabaseClient, isDemoMode } from "@/lib/supabase"
+import { isDemoMode } from "@/lib/supabase"
 import { loginDemoUser } from "@/lib/demo-auth"
 import { AnimatedBackground } from "@/components/animated-background"
 
@@ -56,50 +56,26 @@ export default function LoginPage() {
       // Validate all inputs
       const validatedData = loginSchema.parse({ email, password })
 
-      console.log("Login attempt for:", validatedData.email)
+      console.log("=== LOGIN ATTEMPT ===")
+      console.log("Email:", validatedData.email)
       console.log("Demo mode check:", isDemoMode())
+      console.log("Environment:", process.env.NODE_ENV)
+      console.log("Hostname:", typeof window !== "undefined" ? window.location.hostname : "server")
 
-      // Always check demo mode first
-      if (isDemoMode()) {
-        console.log("Using demo authentication system")
+      // ALWAYS use demo mode for now - no Supabase calls
+      console.log("🔒 USING DEMO AUTHENTICATION SYSTEM")
 
-        // Use the demo authentication system
-        const session = loginDemoUser(validatedData.email, validatedData.password)
+      // Use the demo authentication system
+      const session = loginDemoUser(validatedData.email, validatedData.password)
 
-        if (session) {
-          console.log("Demo login successful, redirecting to dashboard")
-          router.push("/dashboard")
-          return
-        } else {
-          console.log("Demo login failed - invalid credentials")
-          setError("Invalid email or password. Please check your credentials and try again.")
-          return
-        }
-      }
-
-      // Only try Supabase if not in demo mode
-      console.log("Attempting Supabase authentication")
-      try {
-        const supabase = createSupabaseClient()
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: validatedData.email,
-          password: validatedData.password,
-        })
-
-        if (error) {
-          console.error("Supabase auth error:", error)
-          setError("Invalid email or password. Please try again.")
-          return
-        }
-
-        if (data.user) {
-          console.log("Supabase login successful")
-          router.push("/dashboard")
-          router.refresh()
-        }
-      } catch (supabaseError) {
-        console.error("Supabase client error:", supabaseError)
-        setError("Authentication service unavailable. Please try again later.")
+      if (session) {
+        console.log("✅ Demo login successful, redirecting to dashboard")
+        router.push("/dashboard")
+        return
+      } else {
+        console.log("❌ Demo login failed - invalid credentials")
+        setError("Invalid email or password. Please check your credentials and try again.")
+        return
       }
     } catch (error) {
       console.error("Login error:", error)
@@ -159,16 +135,14 @@ export default function LoginPage() {
             </CardHeader>
 
             <CardContent className="relative z-10 px-8 pb-8">
-              {isDemoMode() && (
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
-                  <Alert className="mb-6 border-orange-500/30 bg-orange-500/10">
-                    <AlertTriangle className="h-4 w-4 text-orange-400" />
-                    <AlertDescription className="text-orange-200">
-                      <strong>Demo Mode:</strong> Use demo@securetasker.com / SecureDemo123! or your registered account
-                    </AlertDescription>
-                  </Alert>
-                </motion.div>
-              )}
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
+                <Alert className="mb-6 border-orange-500/30 bg-orange-500/10">
+                  <AlertTriangle className="h-4 w-4 text-orange-400" />
+                  <AlertDescription className="text-orange-200">
+                    <strong>Demo Mode:</strong> Use demo@securetasker.com / SecureDemo123! or register a new account
+                  </AlertDescription>
+                </Alert>
+              </motion.div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <motion.div
