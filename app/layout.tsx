@@ -12,16 +12,24 @@ const orbitron = Orbitron({
 })
 
 export const metadata: Metadata = {
-  title: "SecureTasker - Secure Task Management",
-  description: "A secure web-based task management application with enterprise-grade security features",
+  title: "CyberVault - Quantum Security Platform",
+  description:
+    "Advanced quantum-encrypted security platform with enterprise-grade protection and real-time threat monitoring",
+  keywords: ["cybersecurity", "quantum encryption", "threat monitoring", "enterprise security"],
+  authors: [{ name: "CyberVault Security Team" }],
+  viewport: "width=device-width, initial-scale=1",
     generator: 'v0.dev'
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+        <meta name="theme-color" content="#0f172a" />
+      </head>
       <body className={`${inter.className} ${orbitron.variable}`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
         </ThemeProvider>
       </body>
