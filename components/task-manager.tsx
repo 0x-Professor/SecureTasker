@@ -50,25 +50,26 @@ export default function TaskManager() {
   const router = useRouter()
 
   useEffect(() => {
+    console.log("TaskManager: Initializing...")
     if (isDemoMode()) {
-      // Check if user is logged in demo mode
-      const demoUser = localStorage.getItem("demo_user")
-      if (!demoUser) {
-        router.push("/auth/login")
-        return
-      }
+      console.log("TaskManager: Using demo mode")
       fetchDemoTasks()
     } else {
+      console.log("TaskManager: Using Supabase mode")
       fetchTasks()
     }
   }, [router])
 
   const fetchDemoTasks = () => {
     try {
+      console.log("TaskManager: Fetching demo tasks...")
       const storedTasks = localStorage.getItem("demo_tasks")
       if (storedTasks) {
-        setTasks(JSON.parse(storedTasks))
+        const parsedTasks = JSON.parse(storedTasks)
+        console.log("TaskManager: Found stored tasks:", parsedTasks)
+        setTasks(parsedTasks)
       } else {
+        console.log("TaskManager: No stored tasks, creating sample tasks")
         // Initialize with sample tasks
         const sampleTasks: Task[] = [
           {
@@ -92,11 +93,14 @@ export default function TaskManager() {
         ]
         setTasks(sampleTasks)
         localStorage.setItem("demo_tasks", JSON.stringify(sampleTasks))
+        console.log("TaskManager: Sample tasks created and stored")
       }
     } catch (error) {
+      console.error("TaskManager: Error loading demo tasks:", error)
       setError("Failed to load demo tasks")
     } finally {
       setLoading(false)
+      console.log("TaskManager: Demo tasks loaded successfully")
     }
   }
 
@@ -258,13 +262,13 @@ export default function TaskManager() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800 border-red-200"
       case "medium":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800 border-yellow-200"
       case "low":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800 border-green-200"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800 border-gray-200"
     }
   }
 
@@ -281,12 +285,14 @@ export default function TaskManager() {
     }
   }
 
+  console.log("TaskManager: Rendering with loading:", loading, "tasks:", tasks.length)
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading tasks...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading tasks...</p>
         </div>
       </div>
     )
@@ -296,30 +302,34 @@ export default function TaskManager() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            My Tasks {isDemoMode() && <span className="text-lg text-orange-600">(Demo Mode)</span>}
+          <h2 className="text-2xl font-bold text-white">
+            My Tasks {isDemoMode() && <span className="text-lg text-orange-400">(Demo Mode)</span>}
           </h2>
-          <p className="text-gray-600">
+          <p className="text-slate-400">
             {isDemoMode() ? "Manage your demo tasks with full security validation" : "Manage your daily tasks securely"}
           </p>
         </div>
-        <Button onClick={() => setShowAddForm(true)} disabled={showAddForm}>
+        <Button
+          onClick={() => setShowAddForm(true)}
+          disabled={showAddForm}
+          className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500"
+        >
           <Plus className="mr-2 h-4 w-4" />
           Add Task
         </Button>
       </div>
 
       {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
+        <Alert variant="destructive" className="border-red-500/30 bg-red-500/10">
+          <AlertDescription className="text-red-200">{error}</AlertDescription>
         </Alert>
       )}
 
       {showAddForm && (
-        <Card>
+        <Card className="border-slate-700/50 bg-slate-900/50 backdrop-blur-xl">
           <CardHeader>
-            <CardTitle>{editingTask ? "Edit Task" : "Add New Task"}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-white">{editingTask ? "Edit Task" : "Add New Task"}</CardTitle>
+            <CardDescription className="text-slate-400">
               {editingTask ? "Update your task details" : "Create a new task with secure validation"}
             </CardDescription>
           </CardHeader>
@@ -327,29 +337,33 @@ export default function TaskManager() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Title *</Label>
+                  <Label htmlFor="title" className="text-slate-300">
+                    Title *
+                  </Label>
                   <Input
                     id="title"
                     value={formData.title}
                     onChange={(e) => handleInputChange("title", e.target.value)}
                     placeholder="Enter task title"
-                    className={validationErrors.title ? "border-red-500" : ""}
+                    className={`bg-slate-800/50 border-slate-600/50 text-white ${validationErrors.title ? "border-red-500" : ""}`}
                   />
-                  {validationErrors.title && <p className="text-sm text-red-600">{validationErrors.title}</p>}
+                  {validationErrors.title && <p className="text-sm text-red-400">{validationErrors.title}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="priority">Priority</Label>
+                  <Label htmlFor="priority" className="text-slate-300">
+                    Priority
+                  </Label>
                   <Select
                     value={formData.priority}
                     onValueChange={(value: "low" | "medium" | "high") =>
                       setFormData((prev) => ({ ...prev, priority: value }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-slate-800/50 border-slate-600/50 text-white">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-slate-800 border-slate-700">
                       <SelectItem value="low">Low</SelectItem>
                       <SelectItem value="medium">Medium</SelectItem>
                       <SelectItem value="high">High</SelectItem>
@@ -359,17 +373,19 @@ export default function TaskManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
+                <Label htmlFor="status" className="text-slate-300">
+                  Status
+                </Label>
                 <Select
                   value={formData.status}
                   onValueChange={(value: "pending" | "in_progress" | "completed") =>
                     setFormData((prev) => ({ ...prev, status: value }))
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-slate-800/50 border-slate-600/50 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-slate-800 border-slate-700">
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="in_progress">In Progress</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
@@ -378,21 +394,33 @@ export default function TaskManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description" className="text-slate-300">
+                  Description
+                </Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => handleInputChange("description", e.target.value)}
                   placeholder="Enter task description (optional)"
                   rows={3}
-                  className={validationErrors.description ? "border-red-500" : ""}
+                  className={`bg-slate-800/50 border-slate-600/50 text-white ${validationErrors.description ? "border-red-500" : ""}`}
                 />
-                {validationErrors.description && <p className="text-sm text-red-600">{validationErrors.description}</p>}
+                {validationErrors.description && <p className="text-sm text-red-400">{validationErrors.description}</p>}
               </div>
 
               <div className="flex gap-2">
-                <Button type="submit">{editingTask ? "Update Task" : "Add Task"}</Button>
-                <Button type="button" variant="outline" onClick={resetForm}>
+                <Button
+                  type="submit"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500"
+                >
+                  {editingTask ? "Update Task" : "Add Task"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={resetForm}
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                >
                   Cancel
                 </Button>
               </div>
@@ -403,12 +431,15 @@ export default function TaskManager() {
 
       <div className="grid gap-4">
         {tasks.length === 0 ? (
-          <Card>
+          <Card className="border-slate-700/50 bg-slate-900/50 backdrop-blur-xl">
             <CardContent className="py-12 text-center">
-              <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No tasks yet</h3>
-              <p className="text-gray-600 mb-4">Get started by creating your first task</p>
-              <Button onClick={() => setShowAddForm(true)}>
+              <AlertCircle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-white mb-2">No tasks yet</h3>
+              <p className="text-slate-400 mb-4">Get started by creating your first task</p>
+              <Button
+                onClick={() => setShowAddForm(true)}
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500"
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Your First Task
               </Button>
@@ -416,18 +447,20 @@ export default function TaskManager() {
           </Card>
         ) : (
           tasks.map((task) => (
-            <Card key={task.id}>
+            <Card key={task.id} className="border-slate-700/50 bg-slate-900/50 backdrop-blur-xl">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       {getStatusIcon(task.status)}
-                      <h3 className="font-semibold text-gray-900">{task.title}</h3>
+                      <h3 className="font-semibold text-white">{task.title}</h3>
                       <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
-                      <Badge variant="outline">{task.status.replace("_", " ")}</Badge>
+                      <Badge variant="outline" className="border-slate-600 text-slate-300">
+                        {task.status.replace("_", " ")}
+                      </Badge>
                     </div>
-                    {task.description && <p className="text-gray-600 mb-3">{task.description}</p>}
-                    <p className="text-sm text-gray-500">
+                    {task.description && <p className="text-slate-400 mb-3">{task.description}</p>}
+                    <p className="text-sm text-slate-500">
                       Created: {new Date(task.created_at).toLocaleDateString()}
                       {task.updated_at !== task.created_at && (
                         <span> • Updated: {new Date(task.updated_at).toLocaleDateString()}</span>
@@ -435,14 +468,19 @@ export default function TaskManager() {
                     </p>
                   </div>
                   <div className="flex gap-2 ml-4">
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(task)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(task)}
+                      className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleDelete(task.id)}
-                      className="text-red-600 hover:text-red-700"
+                      className="border-red-600/50 text-red-400 hover:bg-red-500/10"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
