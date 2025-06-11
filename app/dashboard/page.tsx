@@ -110,30 +110,32 @@ export default function DashboardOverview() {
             <CardDescription className="text-slate-400">Frequently used operations</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Link href="/dashboard/tasks">
-              <Button className="w-full justify-start bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 text-blue-300 hover:bg-blue-500/30">
-                <CheckSquare className="mr-2 h-4 w-4" />
-                Manage Tasks
-              </Button>
-            </Link>
-            <Link href="/dashboard/security">
-              <Button className="w-full justify-start bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-300 hover:bg-green-500/30">
-                <Shield className="mr-2 h-4 w-4" />
-                Security Dashboard
-              </Button>
-            </Link>
-            <Link href="/dashboard/analytics">
-              <Button className="w-full justify-start bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-purple-300 hover:bg-purple-500/30">
-                <TrendingUp className="mr-2 h-4 w-4" />
-                View Analytics
-              </Button>
-            </Link>
-            <Link href="/dashboard/reports">
-              <Button className="w-full justify-start bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 text-orange-300 hover:bg-orange-500/30">
-                <Database className="mr-2 h-4 w-4" />
-                Generate Report
-              </Button>
-            </Link>
+            <div className="grid grid-cols-1 gap-3">
+              <Link href="/dashboard/tasks" className="w-full">
+                <Button className="w-full justify-start bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 text-blue-300 hover:bg-blue-500/30">
+                  <CheckSquare className="mr-2 h-4 w-4" />
+                  Manage Tasks
+                </Button>
+              </Link>
+              <Link href="/dashboard/security" className="w-full">
+                <Button className="w-full justify-start bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-300 hover:bg-green-500/30">
+                  <Shield className="mr-2 h-4 w-4" />
+                  Security Dashboard
+                </Button>
+              </Link>
+              <Link href="/dashboard/analytics" className="w-full">
+                <Button className="w-full justify-start bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-purple-300 hover:bg-purple-500/30">
+                  <TrendingUp className="mr-2 h-4 w-4" />
+                  View Analytics
+                </Button>
+              </Link>
+              <Link href="/dashboard/reports" className="w-full">
+                <Button className="w-full justify-start bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 text-orange-300 hover:bg-orange-500/30">
+                  <Database className="mr-2 h-4 w-4" />
+                  Generate Report
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
 

@@ -106,14 +106,82 @@ export default function ReportsPage() {
     }
   }
 
-  const generateReport = async (reportId: string) => {
+  // Function to generate and download a sample report
+  const generateReport = async (reportId: string, reportName: string) => {
     setGenerating(reportId)
-    // Simulate report generation
-    setTimeout(() => {
+
+    try {
+      // Create sample report content based on report type
+      const reportDate = new Date().toISOString().split("T")[0]
+      const reportContent = `# ${reportName} - ${reportDate}
+      
+## Executive Summary
+This report provides a comprehensive analysis of the system's ${reportId.replace("-", " ")} metrics.
+
+## Key Findings
+- Security measures are properly implemented
+- All systems are operational
+- No critical vulnerabilities detected
+
+## Recommendations
+- Continue monitoring system performance
+- Update security protocols regularly
+- Implement additional authentication measures
+
+Generated on: ${new Date().toLocaleString()}
+Report ID: ${reportId}-${Date.now()}
+      `
+
+      // Create a blob from the report content
+      const blob = new Blob([reportContent], { type: "text/plain" })
+
+      // Create a download link and trigger the download
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `${reportId}-${reportDate}.txt`
+      document.body.appendChild(link)
+      link.click()
+
+      // Clean up
+      URL.revokeObjectURL(url)
+      document.body.removeChild(link)
+
+      // Simulate some processing time
+      setTimeout(() => {
+        setGenerating(null)
+      }, 1000)
+    } catch (error) {
+      console.error("Error generating report:", error)
       setGenerating(null)
-      // In a real app, this would trigger a download or show the report
-      alert(`Report generated successfully! Download would start automatically.`)
-    }, 3000)
+    }
+  }
+
+  // Function to download a recent report
+  const downloadRecentReport = (reportName: string) => {
+    const reportDate = new Date().toISOString().split("T")[0]
+    const reportContent = `# ${reportName}
+    
+This is an archived report that was previously generated.
+
+Generated on: ${reportDate}
+Downloaded on: ${new Date().toLocaleString()}
+    `
+
+    // Create a blob from the report content
+    const blob = new Blob([reportContent], { type: "text/plain" })
+
+    // Create a download link and trigger the download
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `${reportName.toLowerCase().replace(/ /g, "-")}.txt`
+    document.body.appendChild(link)
+    link.click()
+
+    // Clean up
+    URL.revokeObjectURL(url)
+    document.body.removeChild(link)
   }
 
   return (
@@ -216,7 +284,7 @@ export default function ReportsPage() {
                       )}
                     </div>
                     <Button
-                      onClick={() => generateReport(template.id)}
+                      onClick={() => generateReport(template.id, template.name)}
                       disabled={isGenerating}
                       className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-50"
                     >
@@ -286,7 +354,12 @@ export default function ReportsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge className={getTypeColor(report.type)}>{report.type.toUpperCase()}</Badge>
-                  <Button variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:bg-slate-800">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                    onClick={() => downloadRecentReport(report.name)}
+                  >
                     <Download className="h-3 w-3" />
                   </Button>
                 </div>
