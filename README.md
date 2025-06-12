@@ -59,31 +59,31 @@ A comprehensive secure web-based task management application demonstrating enter
 ### Local Development
 
 1. **Clone the repository**
-   \`\`\`bash
+   ```bash
    git clone <repository-url>
    cd securetasker
-   \`\`\`
+   ```
 
 2. **Install dependencies**
-   \`\`\`bash
+   ```bash
    npm install
-   \`\`\`
+   ```
 
 3. **Environment Setup**
    Create a `.env.local` file:
-   \`\`\`env
+   ```env
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   \`\`\`
+   ```
 
 4. **Database Setup**
    - Run the SQL scripts in the `scripts/` folder in your Supabase SQL editor
    - This creates the tasks table with proper RLS policies
 
 5. **Run the development server**
-   \`\`\`bash
+   ```bash
    npm run dev
-   \`\`\`
+   ```
 
 6. **Access the application**
    Open [http://localhost:3000](http://localhost:3000) in your browser
@@ -91,10 +91,10 @@ A comprehensive secure web-based task management application demonstrating enter
 ### Production Deployment
 
 1. **Vercel Deployment**
-   \`\`\`bash
+   ```bash
    npm run build
    vercel --prod
-   \`\`\`
+   ```
 
 2. **Environment Variables**
    Set the following in your Vercel dashboard:
@@ -104,17 +104,17 @@ A comprehensive secure web-based task management application demonstrating enter
 ## 🔍 Security Implementation Details
 
 ### Input Validation
-\`\`\`typescript
+```typescript
 const taskSchema = z.object({
   title: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
   priority: z.enum(['low', 'medium', 'high']),
   status: z.enum(['pending', 'in_progress', 'completed'])
 })
-\`\`\`
+```
 
 ### Security Headers
-\`\`\`typescript
+```typescript
 const securityHeaders = {
   'X-XSS-Protection': '1; mode=block',
   'X-Content-Type-Options': 'nosniff',
@@ -122,13 +122,13 @@ const securityHeaders = {
   'Content-Security-Policy': 'default-src \'self\'; ...',
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
 }
-\`\`\`
+```
 
 ### Row Level Security (RLS)
-\`\`\`sql
+```sql
 CREATE POLICY "Users can only see their own tasks" ON tasks
     FOR SELECT USING (auth.uid() = user_id);
-\`\`\`
+```
 
 ## 📊 Security Testing Results
 
@@ -144,7 +144,7 @@ CREATE POLICY "Users can only see their own tasks" ON tasks
 ## 🏗️ Architecture
 
 ### Security Architecture
-\`\`\`
+```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Client Side   │    │   Server Side   │    │    Database     │
 │                 │    │                 │    │                 │
@@ -152,22 +152,22 @@ CREATE POLICY "Users can only see their own tasks" ON tasks
 │ • XSS Protection│    │ • Rate Limiting │    │ • Encrypted Data│
 │ • CSRF Tokens   │    │ • Security Headers│   │ • Audit Logs   │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
-\`\`\`
+```
 
 ### CI/CD Pipeline
-\`\`\`
+```
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
 │   Commit    │───▶│   Security  │───▶│    Build    │───▶│   Deploy    │
 │             │    │   Scanning  │    │   & Test    │    │             │
 │ • Code Push │    │ • Bandit    │    │ • TypeScript│    │ • Vercel    │
 │ • PR Review │    │ • ESLint    │    │ • Unit Tests│    │ • OWASP ZAP │
 └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
-\`\`\`
+```
 
 ## 🧪 Testing
 
 ### Security Tests
-\`\`\`bash
+```bash
 # Run security linting
 npm run lint:security
 
@@ -176,16 +176,16 @@ npm audit
 
 # Run Bandit scan
 bandit -r . -f json
-\`\`\`
+```
 
 ### Unit Tests
-\`\`\`bash
+```bash
 # Run all tests
 npm test
 
 # Run with coverage
 npm run test:coverage
-\`\`\`
+```
 
 ## 📈 Monitoring & Logging
 
@@ -203,24 +203,24 @@ npm run test:coverage
 ## 🔧 Configuration
 
 ### Security Configuration
-\`\`\`typescript
+```typescript
 // middleware.ts
 export const config = {
   matcher: [
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }
-\`\`\`
+```
 
 ### Database Configuration
-\`\`\`sql
+```sql
 -- Enable RLS on all tables
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 
 -- Create security policies
 CREATE POLICY "secure_access" ON tasks
     USING (auth.uid() = user_id);
-\`\`\`
+```
 
 ## 📚 Security Best Practices Implemented
 
