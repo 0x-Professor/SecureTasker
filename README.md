@@ -148,7 +148,7 @@ CREATE POLICY "Users can only see their own tasks" ON tasks
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Client Side   │    │   Server Side   │    │    Database     │
 │                 │    │                 │    │                 │
-│ • Input Valid.  │───▶│ • Auth Middleware│───▶│ • RLS Policies  │
+│ • Input Valid.  │──▶│ • Auth Middleware│───▶│ • RLS Policies  │
 │ • XSS Protection│    │ • Rate Limiting │    │ • Encrypted Data│
 │ • CSRF Tokens   │    │ • Security Headers│   │ • Audit Logs   │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
@@ -157,7 +157,7 @@ CREATE POLICY "Users can only see their own tasks" ON tasks
 ### CI/CD Pipeline
 ```
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   Commit    │───▶│   Security  │───▶│    Build    │───▶│   Deploy    │
+│   Commit    │──▶|   Security  │──▶│    Build    │───▶│   Deploy    │
 │             │    │   Scanning  │    │   & Test    │    │             │
 │ • Code Push │    │ • Bandit    │    │ • TypeScript│    │ • Vercel    │
 │ • PR Review │    │ • ESLint    │    │ • Unit Tests│    │ • OWASP ZAP │
