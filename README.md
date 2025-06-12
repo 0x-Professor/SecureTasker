@@ -257,7 +257,7 @@ CREATE POLICY "secure_access" ON tasks
 4. **Recovery**: System restoration and validation
 5. **Lessons Learned**: Post-incident analysis
 
-## Contributors
+## 🧑‍🤝‍🧑 Contributors
 - [Muhammad Mazhar Saeed](https://www.github.com/MR-PROFESSOR-790/)
 - [Mohsin Mukhtiar Lashari](https://www.github.com/president-xd/)
 - [Khizar Ali Shah](https://www.github.com/eros938/)
