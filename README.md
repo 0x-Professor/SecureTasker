@@ -60,7 +60,7 @@ A comprehensive secure web-based task management application demonstrating enter
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/MR-PROFESSOR-790/SecureTasker
    cd securetasker
    ```
 
@@ -272,7 +272,7 @@ For security issues or questions:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License 
 
 ## 🙏 Acknowledgments
 
