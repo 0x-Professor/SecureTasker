@@ -272,14 +272,15 @@ For security issues or questions:
 
 ## 📄 License
 
-This project is licensed under the MIT License 
+This project is licensed under the miT License 
 
 ## 🙏 Acknowledgments
 
 - OWASP for security guidelines
 - Supabase for secure backend infrastructure
 - Next.js team for security-first framework
-- Security community for best practices
+- Security community for best Solutions
+- 
 
 ---
 
